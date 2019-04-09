@@ -1,0 +1,39 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.trovent</groupId>
+  <artifactId>streamprocessor</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>Trovent Stream Processor</name>
+  <description>Stream Processor using Esper engine configurable by REST-API</description>
+  <properties>
+  	<maven.compiler.target>1.8</maven.compiler.target>
+  	<maven.compiler.source>1.8</maven.compiler.source>
+  </properties>
+  <dependencies>
+  	<dependency>
+  		<groupId>org.kohsuke.args4j</groupId>
+  		<artifactId>args4j-maven-plugin</artifactId>
+  		<version>2.33</version>
+  		<type>maven-plugin</type>
+  	</dependency>
+  </dependencies>
+  <build>
+  	<plugins>
+  		<plugin>
+  			<groupId>org.codehaus.mojo</groupId>
+  			<artifactId>exec-maven-plugin</artifactId>
+  			<version>1.6.0</version>
+  			<configuration>
+  			<mainClass>com.trovent.streamprocessor.Application</mainClass>  				
+  			</configuration>
+  			<executions>
+  				<execution>
+  					<goals>
+  						<goal>java</goal>
+  					</goals>
+  				</execution>
+  			</executions>
+  		</plugin>
+  	</plugins>
+  </build>
+</project>

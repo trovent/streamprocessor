@@ -1,16 +1,7 @@
 package com.trovent.streamprocessor;
 
-import org.kohsuke.args4j.Option;
-import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
-
 public class Application {
 
-	
-	@Option(name="-c", usage="Sets config file name")
-	public String configfile;
-	
 	/**
 	 * Initialise application
 	 * @param args
@@ -25,25 +16,18 @@ public class Application {
 		 * initialise logging component
 		 *  
 		 */
-		CmdLineParser parser = new CmdLineParser(this);
-		try {
-			parser.parseArgument(args);
-			
-			if (this.configfile!=null) {
-				System.out.println(this.configfile);	
-			} else {
-				System.out.println("Option -c is not set");
-			}
-			
-		} catch (CmdLineException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		
+		Configuration config = new Configuration();
+		
+		config.parse(args);
+				
+		if (config.getConfigfile()!=null) {
+			System.out.println(config.getConfigfile());	
+		} else {
+			System.out.println("Option -c is not set");
 		}
 		
-
-				
-		
-		System.out.println("Application.init() done");		
+		System.out.println("Application.init() done\n");		
 	}
 	
 	

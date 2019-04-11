@@ -9,11 +9,13 @@ import org.apache.logging.log4j.Logger;
 public class Application {
 
 	private Logger logger;
+	
+	final private String defaultConfigFile = "app.properties";
 	/**
 	 * Initialise application
 	 * @param args
 	 */	
-	private void init(String[] args) {		
+	private void init(String[] args) {
 
 		// TODO
 		/*
@@ -24,17 +26,24 @@ public class Application {
 		 */
 		
 		this.logger = LogManager.getLogger();
-		this.logger.trace("entering init()");	
+		this.logger.trace("entering init()");
 		
-		Configuration config = new Configuration();		
-		config.parse(args);
-				
+		Configuration config = new Configuration();
+		config.parseArguments(args);
+		
 		if (config.getConfigfile()!=null) {
 			this.logger.debug("reading config from: {}", config.getConfigfile());
 			File f = new File(config.getConfigfile());
-			if (!f.exists())
+			if (!f.exists()) {
 				this.logger.error("config file {} does not exist!", config.getConfigfile());
-		} 
+				// read default properties file
+				config.readConfigFile(defaultConfigFile);
+			}
+		}
+		else {
+			// read default properties file
+			config.readConfigFile(defaultConfigFile);
+		}
 		
 		this.logger.trace("init() done");
 	}
@@ -53,7 +62,7 @@ public class Application {
 		this.logger.trace("run() done");
 	}
 
-	public static void main(String[] args) {		
+	public static void main(String[] args) {
 		Application app = new Application();
 		app.init(args);
 		app.run();

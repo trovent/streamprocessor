@@ -1,13 +1,19 @@
 package com.trovent.streamprocessor;
 
+import java.io.File;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+
 public class Application {
 
+	private Logger logger;
 	/**
 	 * Initialise application
 	 * @param args
 	 */	
-	private void init(String[] args) {
-		System.out.println("Application.init()");
+	private void init(String[] args) {		
 
 		// TODO
 		/*
@@ -17,29 +23,34 @@ public class Application {
 		 *  
 		 */
 		
-		Configuration config = new Configuration();
+		this.logger = LogManager.getLogger();
+		this.logger.trace("entering init()");	
 		
+		Configuration config = new Configuration();		
 		config.parse(args);
 				
 		if (config.getConfigfile()!=null) {
-			System.out.println(config.getConfigfile());	
-		} else {
-			System.out.println("Option -c is not set");
-		}
+			this.logger.debug("reading config from: {}", config.getConfigfile());
+			File f = new File(config.getConfigfile());
+			if (!f.exists())
+				this.logger.error("config file {} does not exist!", config.getConfigfile());
+		} 
 		
-		System.out.println("Application.init() done\n");		
+		this.logger.trace("init() done");
 	}
 	
 	
 	private void run() {
-		System.out.println("Application.run()");
+		this.logger.trace("entering run()");
+		this.logger.info("starting Trovent Stream Processor");
 		// TODO
 		/*
 		 * init and start esper engine
 		 * test connection to kafka
 		 * start application server
 		 */
-		System.out.println("Application.run() done");
+		this.logger.info("shutting down...");
+		this.logger.trace("run() done");
 	}
 
 	public static void main(String[] args) {		
@@ -47,5 +58,4 @@ public class Application {
 		app.init(args);
 		app.run();
 	}
-
 }

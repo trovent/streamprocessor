@@ -1,9 +1,12 @@
 package com.trovent.streamprocessor;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import com.trovent.streamprocessor.restapi.ApplicationServer;
 
 
 public class Application {
@@ -11,6 +14,8 @@ public class Application {
 	private Logger logger;
 	
 	final private String defaultConfigFile = "app.properties";
+	
+	private Configuration config;
 	/**
 	 * Initialise application
 	 * @param args
@@ -28,8 +33,8 @@ public class Application {
 		this.logger = LogManager.getLogger();
 		this.logger.trace("entering init()");
 		
-		Configuration config = new Configuration();
-		config.parseArguments(args);
+		this.config = new Configuration();
+		this.config.parseArguments(args);
 		
 		if (config.getConfigfile()!=null) {
 			this.logger.debug("reading config from: {}", config.getConfigfile());
@@ -49,7 +54,7 @@ public class Application {
 	}
 	
 	
-	private void run() {
+	private void run() throws IOException {
 		this.logger.trace("entering run()");
 		this.logger.info("starting Trovent Stream Processor");
 		// TODO
@@ -58,11 +63,22 @@ public class Application {
 		 * test connection to kafka
 		 * start application server
 		 */
+		
+		ApplicationServer server = new ApplicationServer(this.config);
+		server.start();
+		
+		System.out.println(String.format("Application started and is listening on port %d", this.config.getPort() ));
+  
+		System.in.read();
+
+		
 		this.logger.info("shutting down...");
+		
+		server.stop();
 		this.logger.trace("run() done");
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args)  throws IOException {
 		Application app = new Application();
 		app.init(args);
 		app.run();

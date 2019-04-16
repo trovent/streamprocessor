@@ -1,5 +1,6 @@
 package com.trovent.streamprocessor;
 
+import org.apache.logging.log4j.LogManager;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
@@ -28,9 +29,10 @@ public class Configuration {
 					
 		} catch (CmdLineException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//e.printStackTrace();
+			
+			LogManager.getLogger().error(e.getMessage());
 		}
-
 		
 	}
 }

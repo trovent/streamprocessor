@@ -7,6 +7,7 @@ import com.espertech.esper.client.EPException;
 import com.espertech.esper.client.EPServiceProvider;
 import com.espertech.esper.client.EPServiceProviderManager;
 import com.espertech.esper.client.EPStatement;
+import com.espertech.esper.client.EPStatementSyntaxException;
 import com.espertech.esper.client.EventType;
 
 
@@ -54,11 +55,20 @@ public class TSPEngine {
 	public String addEPLStatement(String statement, String statementName) throws EPException {		
 		//creates a new Statement
 		EPStatement eplStatement;
-		eplStatement = epService.getEPAdministrator().createEPL(statement, statementName);
+		try {
+			eplStatement = epService.getEPAdministrator().createEPL(statement, statementName);
+		}
+		catch(EPStatementSyntaxException e){
+			System.out.println("An Exception has ocurred. Please enter Statements with the correct format");
+			return"An Exception has ocurred. Please enter Statements with the correct format";
+		}
 		
+		
+		//TODO remove this, it is only for Testing Purposes
 		System.out.println(eplStatement.getEventType().getName());
 		
-		this.eventTypes.put(eplStatement.getEventType().getName(), eplStatement.getEventType());
+		
+			this.eventTypes.put(eplStatement.getEventType().getName(), eplStatement.getEventType());
 		
 		return eplStatement.getName();
 	}
@@ -120,6 +130,11 @@ public class TSPEngine {
 		}
 	}
 	
+	/**
+	 * 
+	 * @param name
+	 * @param schema
+	 */
 	public void addEPLSchema(String name, Map<String, String> schema) {
 		/*
 		 * { "name" : "string",
@@ -138,13 +153,31 @@ public class TSPEngine {
 	
 	/**
 	 * TODO
-	 * standard call to send a given event using the currently defined method
+	 * standard call to send a given event
+	 * This function sends a ObjectArray-type event
+	 * @param eventTypeName 
+	 * @param data the content of your event as an Array of Objects 
 	 */
 	public void sendEPLEvent(String eventTypeName, Object[] data) {
 		// Event: { dataA; dataB; dataC; ... }
 		//EventType eventType = this.eventTypes.get(eventTypeName);
 		
 		epService.getEPRuntime().sendEvent(data, eventTypeName);
+		
+		
+	}
+	/**
+	 * standard call to send a given event
+	 * This function sends a Map-type event
+	 * @param eventTypeName
+	 * @param data the content of your event as a Map 
+	 */
+	public void sendEPLEvent(String eventTypeName, Map<?, ?> data) {
+		// Event: { dataA; dataB; dataC; ... }
+		//EventType eventType = this.eventTypes.get(eventTypeName);
+		
+		epService.getEPRuntime().sendEvent(data, eventTypeName);
+		
 		
 	}
 	

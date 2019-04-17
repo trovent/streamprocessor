@@ -109,15 +109,19 @@ public class Application {
 		statement = "select first_name as First_Name from SomeArrayEventSchema";
 		engine.addEPLStatement(statement, "ArrayStatement");
 		statement = "create map schema SomeMapEventSchema as (carId integer, fictionalCarType String)";
-		engine.addEPLStatement(statement, "Map");
+		engine.addEPLStatement(statement, "MapSchema");
 		
 		
 		//testData as objectarray
+		// "one";"many words";987;"small"
+		// [ "one", "many words", 987, "small" ]
 		Object[] objArrayData = new Object[2];
 		objArrayData[0] = new String("hello");
 		objArrayData[1] = new Integer(666);
 		
 		//testData as Map
+		// { "cardId" : 1230,
+		//	 "fictionalCarType" : "gravida" }
 		Map<String, Object> mapData = new HashMap<String, Object>();
 		mapData.put("carId", 1230);
 		mapData.put("fictionalCarType", "gravida");

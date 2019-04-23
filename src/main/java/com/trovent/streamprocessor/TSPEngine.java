@@ -130,12 +130,42 @@ public class TSPEngine {
 		 * { "name" : "string", "age" : "integer" }
 		 * 
 		 * 
-		 * Map<String, Object> ev = new HashMap<String, Object>(); ev.put("name",
-		 * String.class); ev.put("age", Integer.class);
-		 * engine.getEPAdministrator().getConfiguration().addEventType("PersonEvent",
-		 * ev);
+		 * 
 		 */
-
+		
+		// "string"  => String.class
+		
+		try {
+	
+			Map<String, Class> lookupTypeName = new HashMap<String, Class>();
+			lookupTypeName.put("string", Class.forName("java.lang.String"));
+			//lookupTypeName.put("str", "java.lang.String");
+			//lookupTypeName.put("integer", "java.lang.Integer");
+			//lookupTypeName.put("int", "java.lang.Integer");
+			
+			Map<String, Object> ev = new HashMap<String, Object>(); 
+			
+			
+			
+			
+			for ( Map.Entry<String,String> entry : schema.entrySet() )
+			{
+				String typeName = entry.getValue();	// TODO: convert to lowercase
+				Class javaType = lookupTypeName.get(typeName);
+				
+				ev.put( entry.getKey(), javaType);
+			}
+			
+			this.epService.getEPAdministrator().getConfiguration().addEventType("PersonEvent", ev);			
+			// "str" => "string"
+			// "String" => "string"
+			
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
 	}
 
 	/**
@@ -165,6 +195,13 @@ public class TSPEngine {
 
 		epService.getEPRuntime().sendEvent(data, eventTypeName);
 
+	}
+	
+	/**
+	 * @return the EPServiceProvider
+	 */
+	public EPServiceProvider getEPServiceProvider(){
+		return epService;
 	}
 
 }

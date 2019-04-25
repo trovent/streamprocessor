@@ -90,6 +90,9 @@ public class TSPEngine {
 		if (statement != null) {
 			statement.destroy();
 		}
+		else {
+			throw new EPException(String.format("there is no statement with the name '%s'",name));
+		}
 		// TODO remove eventtype from Map
 	}
 
@@ -103,6 +106,9 @@ public class TSPEngine {
 		if (statement != null) {
 			statement.start();
 		}
+		else {
+			throw new EPException(String.format("there is no statement with the name '%s'",name));
+		}
 	}
 
 	/**
@@ -114,6 +120,9 @@ public class TSPEngine {
 		EPStatement statement = epService.getEPAdministrator().getStatement(name);
 		if (statement != null) {
 			statement.stop();
+		}
+		else {
+			throw new EPException(String.format("there is no statement with the name '%s'",name));
 		}
 	}
 

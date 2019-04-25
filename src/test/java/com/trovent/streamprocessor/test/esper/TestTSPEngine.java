@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import com.espertech.esper.client.EPException;
 import com.espertech.esper.client.EPStatementException;
 import com.trovent.streamprocessor.TSPEngine;
 
@@ -107,4 +108,28 @@ public class TestTSPEngine extends TestCase {
 	}
 
 
+	public void testAddEPLSchemaAllowedEntries( ) {
+		Map<String, String> newEventType = new HashMap<String, String>(); 
+		
+		newEventType.put("myString", "string");
+		newEventType.put("myinteger", "integer");
+		newEventType.put("myinteger2", "int");
+		newEventType.put("myboolean", "boolean");
+		newEventType.put("myLong", "long");
+		newEventType.put("myDouble", "double");
+		newEventType.put("myFloat", "float");
+		newEventType.put("myByte", "byte");
+		
+		engine.addEPLSchema("TestEventSchema", newEventType);
+	}
+	
+	public void testAddEPLSchemaStrangeEntries( ) {
+		Map<String, String> newEventType = new HashMap<String, String>(); 
+		
+		newEventType.put("myString", "wooords");
+		newEventType.put("foo", "bar");
+		
+		assertThrows(EPException.class,
+				() -> engine.addEPLSchema("TestEvent", newEventType));
+	}
 }

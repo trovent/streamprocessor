@@ -14,9 +14,25 @@ public class TSPEngine {
 	private EPServiceProvider epService;
 	HashMap<String, EventType> eventTypes;
 	private int statementCounter;
+	Map<String, Class<?>> lookupTypeName;
 
 	public TSPEngine() {
 		eventTypes = new HashMap<String, EventType>();
+		
+		lookupTypeName = new HashMap<String, Class<?>>();
+		try {
+			lookupTypeName.put("string", Class.forName("java.lang.String"));
+			lookupTypeName.put("integer", Class.forName("java.lang.Integer"));
+			lookupTypeName.put("int", Class.forName("java.lang.Integer"));			
+			lookupTypeName.put("boolean", Class.forName("java.lang.Boolean"));
+			lookupTypeName.put("long", Class.forName("java.lang.Long"));
+			lookupTypeName.put("double", Class.forName("java.lang.Double"));
+			lookupTypeName.put("float", Class.forName("java.lang.Float"));
+			lookupTypeName.put("byte", Class.forName("java.lang.Byte"));
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+		}
+		
 	}
 
 	/**
@@ -121,51 +137,31 @@ public class TSPEngine {
 	}
 
 	/**
-	 * 
+	 * TODO improve explanation for map
 	 * @param name
-	 * @param schema
+	 * @param schema Map with format String,String . First String is the name of the parameter, second the name of the class <br>
+	 *  currently allowed:
 	 */
 	public void addEPLSchema(String name, Map<String, String> schema) {
 		/*
 		 * { "name" : "string", "age" : "integer" }
-		 * 
-		 * 
-		 * 
 		 */
 		
 		// "string"  => String.class
 		
-		try {
-	
-			Map<String, Class> lookupTypeName = new HashMap<String, Class>();
-			lookupTypeName.put("string", Class.forName("java.lang.String"));
-			//lookupTypeName.put("str", "java.lang.String");
-			//lookupTypeName.put("integer", "java.lang.Integer");
-			//lookupTypeName.put("int", "java.lang.Integer");
-			
-			Map<String, Object> ev = new HashMap<String, Object>(); 
-			
-			
-			
-			
-			for ( Map.Entry<String,String> entry : schema.entrySet() )
-			{
-				String typeName = entry.getValue();	// TODO: convert to lowercase
-				Class javaType = lookupTypeName.get(typeName);
-				
-				ev.put( entry.getKey(), javaType);
+		Map<String, Object> ev = new HashMap<String, Object>(); 
+		
+		
+		for ( Map.Entry<String,String> entry : schema.entrySet() ){
+			String typeName = entry.getValue();
+			Class<?> javaType = lookupTypeName.get(typeName.toLowerCase());
+			if (javaType==null) {
+				throw new EPException(String.format("can not find type with name '%s'",typeName));
 			}
-			
-			this.epService.getEPAdministrator().getConfiguration().addEventType("PersonEvent", ev);			
-			// "str" => "string"
-			// "String" => "string"
-			
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			ev.put( entry.getKey(), javaType);
 		}
 		
-		
+		this.epService.getEPAdministrator().getConfiguration().addEventType(name, ev);			
 	}
 
 	/**

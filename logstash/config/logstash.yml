@@ -1,0 +1,13 @@
+http.host: "0.0.0.0"
+xpack.monitoring.enabled: false
+
+# name of the logstash node
+node.name: "lstest-01"
+
+config.reload.automatic: true
+config.reload.interval: 10s
+config.debug: true
+log.level: debug
+#
+#
+#

@@ -1,0 +1,43 @@
+version: '3.6'
+
+services:
+  logstash:
+    image: logstash:6.7.1
+    ports:
+      - "2055:2055/udp"
+      - "5000:5000/tcp"
+      - "5000:5000/udp"
+    volumes:
+      - ./logstash/pipeline/:/usr/share/logstash/pipeline/
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
+
+  zookeeper:
+    image: wurstmeister/zookeeper
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    expose:
+      - "2181"
+    ports:
+      - "2181:2181"
+
+
+  kafka:
+    image: wurstmeister/kafka
+    expose:
+      - "9092"
+    ports:
+      - "29092:29092"
+    depends_on:
+      - zookeeper
+    environment:
+      # define listeners
+      KAFKA_LISTENERS: LISTENER_DOCKER://:9092,LISTENER_HOST://:29092 
+      # advertise both listeners
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER://kafka:9092, LISTENER_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_DOCKER:PLAINTEXT, LISTENER_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_DOCKER
+
+      # zookeeper to connect to
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_CREATE_TOPICS: "input:1:1, output:1:1, syslog:1:1, netflow:1:1"
+ 

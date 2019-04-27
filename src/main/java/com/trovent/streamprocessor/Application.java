@@ -10,6 +10,8 @@ import org.apache.logging.log4j.Logger;
 
 import com.trovent.streamprocessor.restapi.ApplicationServer;
 //import com.sun.tools.doclets.internal.toolkit.util.DocFinder.Input;
+import com.trovent.streamprocessor.kafka.InputProcessor;
+import com.trovent.streamprocessor.kafka.KafkaManager;
 
 
 public class Application {
@@ -17,23 +19,27 @@ public class Application {
 	private Logger logger;
 	private TSPEngine engine = new TSPEngine();
 	
+
+	private KafkaManager kafkaManager;
+
 	final private String defaultConfigFile = "app.properties";
 	
 	private Configuration config;
+
 	/**
 	 * Initialise application
+	 * 
 	 * @param args
-	 */	
+	 */
 	private void init(String[] args) {
 
 		// TODO
 		/*
-		 * parse commandline parameters
-		 * open configfile, read settings
-		 * initialise logging component
-		 *  
+		 * parse commandline parameters open configfile, read settings initialise
+		 * logging component
+		 * 
 		 */
-		
+
 		this.logger = LogManager.getLogger();
 		this.logger.trace("entering init()");
 		
@@ -48,17 +54,18 @@ public class Application {
 				// read default properties file
 				config.readConfigFile(defaultConfigFile);
 			}
-		}
-		else {
+		} else {
 			// read default properties file
 			config.readConfigFile(defaultConfigFile);
 		}
-		
+
+		this.logger.info("creating KafkaManager");
+		this.kafkaManager = new KafkaManager();
+
 		this.logger.trace("init() done");
 	}
-	
-	
-	private void run() throws IOException {
+
+	private void run() {
 		this.logger.trace("entering run()");
 		this.logger.info("starting Trovent Stream Processor");
 		
@@ -74,10 +81,11 @@ public class Application {
 		// TEST END
 		
 		/*
-		 * init and start esper engine
-		 * test connection to kafka
-		 * start application server
+		 * init and start esper engine test connection to kafka start application server
 		 */
+
+		testConsumer();
+
 		
 		ApplicationServer server = new ApplicationServer(this.config);
 		server.start();
@@ -98,25 +106,13 @@ public class Application {
 		app.init(args);
 		app.run();
 	}
-	
-	/**
-	 * opens console enabling the user to write custom statements and send the to the esper engine
-	 * @throws IOException
-	 */
-	void interactiveStatementEntry() throws IOException {
-		engine.init();
-		System.out.println("Enter custom statements now. Type exit to exit");
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		
-		//tests for custom input and sends it as a statement
-		System.out.print("Enter new Statement");
-        String s = br.readLine();
-		while(s.equals("exit")==false) {
-			engine.addEPLStatement(s, "inputStatement");
-			System.out.print("Enter new Statement");
-			s = br.readLine();
-		}
+
+	private void testConsumer() {
+
+		// InputProcessor input = new CSVInputProcessor("myevent");
+		InputProcessor input = new JSONInputProcessor("myevent");
+
+		this.kafkaManager.createConsumer("syslog", input);
+		// this.kafkaManager.createConsumer("netflow", input);
 	}
-	
-	
 }

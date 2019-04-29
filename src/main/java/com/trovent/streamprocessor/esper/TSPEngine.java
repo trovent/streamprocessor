@@ -127,24 +127,6 @@ public class TSPEngine {
 		}
 	}
 
-	/**
-	 * @author lukas
-	 * @param name the name of the Statement a Listener is to be attached to
-	 */
-	public void addEPLListener(String name) {
-		// gets the statement with the corresponding unique Name
-		EPStatement statement = epService.getEPAdministrator().getStatement(name);
-
-		if (statement != null) {
-			statement.addListener((newData, oldData) -> {
-				EventType evType = newData[0].getEventType();
-				for (String propName : evType.getPropertyNames()) {
-					Object value = newData[0].get(propName);
-					System.out.println(String.format("%s : %s", propName, value));
-				}
-			});
-		}
-	}
 	
 	/**
 	 * Attaches the given UpdateListener to a statement defined by name

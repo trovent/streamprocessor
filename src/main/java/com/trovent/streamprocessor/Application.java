@@ -12,6 +12,7 @@ import com.espertech.esper.client.EventBean;
 import com.espertech.esper.client.UpdateListener;
 import com.trovent.streamprocessor.kafka.InputProcessor;
 import com.trovent.streamprocessor.kafka.KafkaManager;
+import com.trovent.streamprocessor.kafka.Producer;
 import com.trovent.streamprocessor.restapi.ApplicationServer;
 
 public class Application {
@@ -127,16 +128,26 @@ public class Application {
 		// define Listener that outputs the events from the statement
 		class MyListener implements UpdateListener {
 
+			Producer kafkaProducer;
+
+			MyListener(Producer producer) {
+				this.kafkaProducer = producer;
+			}
+
 			@Override
 			public void update(EventBean[] newEvents, EventBean[] oldEvents) {
 				for (EventBean eb : newEvents) {
 					logger.info("{} {} {}  count:{}", eb.get("syslog_timestamp"), eb.get("syslog_app"),
 							eb.get("syslog_message"), eb.get("count(*)"));
+
+					this.kafkaProducer.send(String.format("%s %s %s %d", eb.get("syslog_timestamp"),
+							eb.get("syslog_app"), eb.get("syslog_message"), eb.get("count(*)")));
 				}
 			}
 		}
+
 		this.engine.getEPServiceProvider().getEPAdministrator().getStatement(statementName)
-				.addListener(new MyListener());
+				.addListener(new MyListener(this.kafkaManager.createProducer("output")));
 
 	}
 }

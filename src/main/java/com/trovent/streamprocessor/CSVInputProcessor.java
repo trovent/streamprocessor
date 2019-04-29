@@ -19,9 +19,10 @@ public class CSVInputProcessor implements InputProcessor {
 		this.logger = LogManager.getLogger();
 	}
 
-	public void process(String input) {
+	public Boolean process(String input) {
 
 		this.logger.debug(String.format("input: '%s'", input));
+		return false;
 
 		// TODO: read from given string, data is given as csv
 		// parse values (split at ',')

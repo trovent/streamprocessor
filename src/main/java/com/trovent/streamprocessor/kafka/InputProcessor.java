@@ -5,6 +5,6 @@ public interface InputProcessor {
 	/*
 	 * Process the given input string
 	 */
-	void process(String input);
+	Boolean process(String input);
 
 }

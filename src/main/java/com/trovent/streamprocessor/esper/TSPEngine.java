@@ -1,4 +1,4 @@
-package com.trovent.streamprocessor;
+package com.trovent.streamprocessor.esper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,6 +8,7 @@ import com.espertech.esper.client.EPServiceProvider;
 import com.espertech.esper.client.EPServiceProviderManager;
 import com.espertech.esper.client.EPStatement;
 import com.espertech.esper.client.EventType;
+import com.espertech.esper.client.UpdateListener;
 
 public class TSPEngine {
 
@@ -144,6 +145,20 @@ public class TSPEngine {
 			});
 		}
 	}
+	
+	/**
+	 * Attaches the given UpdateListener to a statement defined by name
+	 * @param statementName name of the statement the listener will attach to
+	 * @param listener the Listener that will be attached
+	 */
+	public void addListener(String statementName, UpdateListener listener) {
+		if(epService.getEPAdministrator().getStatement(statementName)!=null) {
+			epService.getEPAdministrator().getStatement(statementName).addListener(listener);
+		}
+		else {
+			throw new EPException(String.format("there is no statement with the name '%s'",statementName));
+		}
+	}
 
 	/**
 	 * TODO improve explanation for map
@@ -208,5 +223,7 @@ public class TSPEngine {
 	public EPServiceProvider getEPServiceProvider(){
 		return epService;
 	}
+	
+	
 
 }

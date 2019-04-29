@@ -17,7 +17,7 @@ import com.espertech.esper.client.EPStatement;
 import com.espertech.esper.client.EventBean;
 import com.espertech.esper.client.UpdateListener;
 import com.trovent.streamprocessor.JSONInputProcessor;
-import com.trovent.streamprocessor.TSPEngine;
+import com.trovent.streamprocessor.esper.TSPEngine;
 
 class TestJSONInputProcessor {
 

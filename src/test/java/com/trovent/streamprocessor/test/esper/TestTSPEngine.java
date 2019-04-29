@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import com.espertech.esper.client.EPException;
 import com.espertech.esper.client.EPStatementException;
-import com.trovent.streamprocessor.TSPEngine;
+import com.trovent.streamprocessor.esper.TSPEngine;
 
 import junit.framework.TestCase;
 
@@ -107,7 +107,7 @@ public class TestTSPEngine extends TestCase {
 		engine.sendEPLEvent("SomeArrayEventSchema", objArrayData);
 	}
 
-
+	@Test
 	public void testAddEPLSchemaAllowedEntries( ) {
 		Map<String, String> newEventType = new HashMap<String, String>(); 
 		
@@ -123,6 +123,7 @@ public class TestTSPEngine extends TestCase {
 		engine.addEPLSchema("TestEventSchema", newEventType);
 	}
 	
+	@Test
 	public void testAddEPLSchemaStrangeEntries( ) {
 		Map<String, String> newEventType = new HashMap<String, String>(); 
 		
@@ -132,4 +133,5 @@ public class TestTSPEngine extends TestCase {
 		assertThrows(EPException.class,
 				() -> engine.addEPLSchema("TestEvent", newEventType));
 	}
+		
 }

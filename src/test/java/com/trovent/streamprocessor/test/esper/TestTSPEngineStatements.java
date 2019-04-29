@@ -1,11 +1,14 @@
 package com.trovent.streamprocessor.test.esper;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.Test;
 
 import com.espertech.esper.client.EPException;
-import com.trovent.streamprocessor.TSPEngine;
+import com.espertech.esper.client.EventBean;
+import com.espertech.esper.client.UpdateListener;
+import com.trovent.streamprocessor.esper.TSPEngine;
 
 import junit.framework.TestCase;
 
@@ -89,9 +92,32 @@ public class TestTSPEngineStatements extends TestCase {
 		engine.removeEPLStatement("MapSchema");
 	}
 	
+	@Test
 	public void testRemoveEPLStatementForNonexistantStatement() {
 		assertThrows(EPException.class, 
 				()-> engine.removeEPLStatement("Bielefeld"));
+	}
+	
+	@Test
+	public void testAddListenerToStatement() throws InterruptedException {
+		class MyListener implements UpdateListener {
+			public void update(EventBean[] newEvents, EventBean[] oldEvents) {
+				//does Nothing
+			}
+		}
+		MyListener newListener = new MyListener();
+		engine.addListener("MapStatement", newListener);
+	}
+	
+	@Test
+	public void testAddListenerToNonexistantStatement() {
+		class MyListener implements UpdateListener {			
+			public void update(EventBean[] newEvents, EventBean[] oldEvents) {
+				//does Nothing
+			}
+		}
+		assertThrows(EPException.class, 
+				()-> engine.addListener("Bielefeld", new MyListener()));		
 	}
 	
 }

@@ -138,20 +138,27 @@ class TestJSONInputProcessor {
 		EPStatement epStatement = this.engine.getEPServiceProvider().getEPAdministrator().getStatement(STMT_NAME);
 
 		// create listener with tests
-		class MyListener implements UpdateListener {
-			public void update(EventBean[] newEvents, EventBean[] oldEvents) {
-				// there should be at least one record
-				assertTrue(newEvents.length > 0);
-				// there event record must contain 4 fields (as defined before in the statement)
-				assertEquals(4, newEvents[0].getEventType().getPropertyNames().length);
+		class MyListener implements UpdateListener {			
+			Boolean isDone = false;			
+			int length = 0;
+			
+			public void update(EventBean[] newEvents, EventBean[] oldEvents) {				
+				this.length  = newEvents[0].getEventType().getPropertyNames().length;
+				this.isDone = true;
 			}
 		}
 
 		// add listener to statement
-		epStatement.addListener(new MyListener());
-
+		MyListener listener = new MyListener();
+		epStatement.addListener(listener);
+		assertEquals(0,  listener.length);
+		
 		// create data in JSON format
 		String data = "{ \"name\" : \"MyName\", \"age\" : 42, \"isAdult\" : \"true\" }";
 		assertTrue(input.process(data));
+				
+		while (!listener.isDone)
+			;		
+		assertEquals(5,  listener.length);		
 	}
 }

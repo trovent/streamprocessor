@@ -135,8 +135,6 @@ class TestJSONInputProcessor {
 		String stmt = "select *, sum(age), count(*) from " + DEFAULT_SCHEMA;
 		this.engine.addEPLStatement(stmt, STMT_NAME);
 
-		EPStatement epStatement = this.engine.getEPServiceProvider().getEPAdministrator().getStatement(STMT_NAME);
-
 		// create listener with tests
 		class MyListener implements UpdateListener {			
 			Boolean isDone = false;			
@@ -147,10 +145,9 @@ class TestJSONInputProcessor {
 				this.isDone = true;
 			}
 		}
-
 		// add listener to statement
 		MyListener listener = new MyListener();
-		epStatement.addListener(listener);
+		this.engine.addListener(STMT_NAME, listener);
 		assertEquals(0,  listener.length);
 		
 		// create data in JSON format

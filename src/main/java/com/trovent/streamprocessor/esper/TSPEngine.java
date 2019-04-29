@@ -3,6 +3,7 @@ package com.trovent.streamprocessor.esper;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.espertech.esper.client.ConfigurationException;
 import com.espertech.esper.client.EPException;
 import com.espertech.esper.client.EPServiceProvider;
 import com.espertech.esper.client.EPServiceProviderManager;
@@ -19,12 +20,12 @@ public class TSPEngine {
 
 	public TSPEngine() {
 		eventTypes = new HashMap<String, EventType>();
-		
+
 		lookupTypeName = new HashMap<String, Class<?>>();
 		try {
 			lookupTypeName.put("string", Class.forName("java.lang.String"));
 			lookupTypeName.put("integer", Class.forName("java.lang.Integer"));
-			lookupTypeName.put("int", Class.forName("java.lang.Integer"));			
+			lookupTypeName.put("int", Class.forName("java.lang.Integer"));
 			lookupTypeName.put("boolean", Class.forName("java.lang.Boolean"));
 			lookupTypeName.put("long", Class.forName("java.lang.Long"));
 			lookupTypeName.put("double", Class.forName("java.lang.Double"));
@@ -33,7 +34,7 @@ public class TSPEngine {
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 		}
-		
+
 	}
 
 	/**
@@ -90,9 +91,8 @@ public class TSPEngine {
 		EPStatement statement = epService.getEPAdministrator().getStatement(name);
 		if (statement != null) {
 			statement.destroy();
-		}
-		else {
-			throw new EPException(String.format("there is no statement with the name '%s'",name));
+		} else {
+			throw new EPException(String.format("there is no statement with the name '%s'", name));
 		}
 		// TODO remove eventtype from Map
 	}
@@ -106,9 +106,8 @@ public class TSPEngine {
 		EPStatement statement = epService.getEPAdministrator().getStatement(name);
 		if (statement != null) {
 			statement.start();
-		}
-		else {
-			throw new EPException(String.format("there is no statement with the name '%s'",name));
+		} else {
+			throw new EPException(String.format("there is no statement with the name '%s'", name));
 		}
 	}
 
@@ -121,53 +120,97 @@ public class TSPEngine {
 		EPStatement statement = epService.getEPAdministrator().getStatement(name);
 		if (statement != null) {
 			statement.stop();
-		}
-		else {
-			throw new EPException(String.format("there is no statement with the name '%s'",name));
+		} else {
+			throw new EPException(String.format("there is no statement with the name '%s'", name));
 		}
 	}
 
-	
+	/**
+	 * Looks into Configuration and checks if Schema with the given Name exists
+	 * 
+	 * @param eventTypeName Name of the Schema
+	 * @return
+	 */
+	public boolean hasSchema(String eventTypeName) {
+		return epService.getEPAdministrator().getConfiguration().isEventTypeExists(eventTypeName);
+	}
+
+	/**
+	 * Checks if Schema with the given Name exists
+	 * 
+	 * @param eventTypeName Name of the Schema
+	 * @return
+	 */
+	public boolean hasStatement(String statementName) {
+		return (epService.getEPAdministrator().getStatement(statementName) != null);
+	}
+
 	/**
 	 * Attaches the given UpdateListener to a statement defined by name
+	 * 
 	 * @param statementName name of the statement the listener will attach to
-	 * @param listener the Listener that will be attached
+	 * @param listener      the Listener that will be attached
 	 */
 	public void addListener(String statementName, UpdateListener listener) {
-		if(epService.getEPAdministrator().getStatement(statementName)!=null) {
+		if (epService.getEPAdministrator().getStatement(statementName) != null) {
 			epService.getEPAdministrator().getStatement(statementName).addListener(listener);
-		}
-		else {
-			throw new EPException(String.format("there is no statement with the name '%s'",statementName));
+		} else {
+			throw new EPException(String.format("there is no statement with the name '%s'", statementName));
 		}
 	}
 
 	/**
 	 * TODO improve explanation for map
+	 * 
 	 * @param name
-	 * @param schema Map with format String,String . First String is the name of the parameter, second the name of the class <br>
-	 *  currently allowed:
+	 * @param schema Map with format String,String . First String is the name of the
+	 *               parameter, second the name of the class <br>
+	 *               currently allowed:
 	 */
 	public void addEPLSchema(String name, Map<String, String> schema) {
 		/*
 		 * { "name" : "string", "age" : "integer" }
 		 */
-		
-		// "string"  => String.class
-		
-		Map<String, Object> ev = new HashMap<String, Object>(); 
-		
-		
-		for ( Map.Entry<String,String> entry : schema.entrySet() ){
+
+		// "string" => String.class
+
+		Map<String, Object> ev = new HashMap<String, Object>();
+
+		for (Map.Entry<String, String> entry : schema.entrySet()) {
 			String typeName = entry.getValue();
 			Class<?> javaType = lookupTypeName.get(typeName.toLowerCase());
-			if (javaType==null) {
-				throw new EPException(String.format("can not find type with name '%s'",typeName));
+			if (javaType == null) {
+				throw new EPException(String.format("can not find type with name '%s'", typeName));
 			}
-			ev.put( entry.getKey(), javaType);
+			ev.put(entry.getKey(), javaType);
 		}
-		
-		this.epService.getEPAdministrator().getConfiguration().addEventType(name, ev);			
+
+		this.epService.getEPAdministrator().getConfiguration().addEventType(name, ev);
+	}
+
+	/**
+	 * removes a Schema with the given Name
+	 * 
+	 * @param eventTypeName Name of the Statement
+	 */
+	public void removeEPLSchema(String eventTypeName) throws ConfigurationException {
+		if (epService.getEPAdministrator().getConfiguration().isEventTypeExists(eventTypeName)) {
+			epService.getEPAdministrator().getConfiguration().removeEventType(eventTypeName, false);
+		} else {
+			throw new EPException(String.format("Event with the Name '%s' does not exist", eventTypeName));
+		}
+	}
+
+	/**
+	 * removes a Schema with the given Name <br>
+	 * gives the option to force the removal
+	 * 
+	 * @param name  Name of the Statement
+	 * @param force if true, removes a Schema even if there are Statements depending
+	 *              on it.
+	 */
+	public void removeEPLSchema(String name, boolean force) throws ConfigurationException {
+		epService.getEPAdministrator().getConfiguration().removeEventType(name, force);
 	}
 
 	/**
@@ -198,14 +241,12 @@ public class TSPEngine {
 		epService.getEPRuntime().sendEvent(data, eventTypeName);
 
 	}
-	
+
 	/**
 	 * @return the EPServiceProvider
 	 */
-	public EPServiceProvider getEPServiceProvider(){
+	public EPServiceProvider getEPServiceProvider() {
 		return epService;
 	}
-	
-	
 
 }

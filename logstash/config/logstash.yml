@@ -6,8 +6,8 @@ node.name: "lstest-01"
 
 config.reload.automatic: true
 config.reload.interval: 10s
-config.debug: true
-log.level: debug
+config.debug: false
+log.level: info
 #
 #
 #

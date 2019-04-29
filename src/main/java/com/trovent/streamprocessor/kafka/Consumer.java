@@ -50,10 +50,7 @@ public class Consumer implements Runnable {
 		while (!this.isStopped) {
 			ConsumerRecords<String, String> records = this.consumer.poll(Duration.ofMillis(100));
 			for (ConsumerRecord<String, String> record : records) {
-				// System.out.printf("offset = %d, key = %s, value = %s%n", record.offset(),
-				// record.key(), record.value());
-				this.logger.trace(String.format("offset = %d, key = %s, value = %s%n", record.offset(), record.key(),
-						record.value()));
+				this.logger.trace("offset: {}  key: {}  value: {}", record.offset(), record.key(), record.value());
 				input.process(record.value());
 			}
 		}

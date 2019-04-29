@@ -14,6 +14,7 @@ import com.trovent.streamprocessor.kafka.InputProcessor;
 import com.trovent.streamprocessor.kafka.KafkaManager;
 import com.trovent.streamprocessor.kafka.Producer;
 import com.trovent.streamprocessor.restapi.ApplicationServer;
+import com.trovent.streamprocessor.esper.TSPEngine;
 
 public class Application {
 

@@ -13,6 +13,7 @@ import com.espertech.esper.client.EventType;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.trovent.streamprocessor.kafka.InputProcessor;
+import com.trovent.streamprocessor.esper.TSPEngine;
 
 public class JSONInputProcessor implements InputProcessor {
 

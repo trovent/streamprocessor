@@ -25,7 +25,7 @@ class TestCSVInputProcessor {
 		engine = new TSPEngine();
 		engine.init();
 
-		String[] propNames = new String[7];
+		String[] propNames = new String[9];
 		String[] typeNames = new String[propNames.length];
 
 		propNames[0] = "name";
@@ -42,6 +42,10 @@ class TestCSVInputProcessor {
 		typeNames[5] = "float";
 		propNames[6] = "ratio";
 		typeNames[6] = "double";
+		propNames[7] = "Hash";
+		typeNames[7] = "BigInteger";
+		propNames[8] = "HashDec";
+		typeNames[8] = "BigDecimal";
 
 		engine.addEPLSchema(DEFAULT_SCHEMA, propNames, typeNames);
 	}
@@ -99,7 +103,7 @@ class TestCSVInputProcessor {
 	void testProcessWithArraySuccess() {
 		CSVInputProcessor input = new CSVInputProcessor(engine, DEFAULT_SCHEMA);
 
-		String[] data = new String[7];
+		String[] data = new String[9];
 		data[0] = "John";
 		data[1] = "42";
 		data[2] = "true";
@@ -107,6 +111,8 @@ class TestCSVInputProcessor {
 		data[4] = "127";
 		data[5] = "3.14159";
 		data[6] = "123456.765432";
+		data[7] = "123456765432";
+		data[8] = "99999.74565665432";
 
 		assertTrue(input.process(data));
 	}
@@ -115,7 +121,7 @@ class TestCSVInputProcessor {
 	void testProcessWithCSVString() {
 		CSVInputProcessor input = new CSVInputProcessor(engine, DEFAULT_SCHEMA);
 
-		String data = "MyName;42;true;947875;-128;1234.665;98765.98765";
+		String data = "MyName;42;true;947875;-128;1234.665;98765.98765;9876543210000;56789.111222333444555";
 		assertTrue(input.process(data));
 	}
 
@@ -123,7 +129,7 @@ class TestCSVInputProcessor {
 	void testProcessWithTypeError() {
 		CSVInputProcessor input = new CSVInputProcessor(engine, DEFAULT_SCHEMA);
 
-		String[] data = new String[7];
+		String[] data = new String[9];
 		data[0] = "John";
 		data[1] = "42";
 		data[2] = "true";
@@ -131,6 +137,8 @@ class TestCSVInputProcessor {
 		data[4] = "127";
 		data[5] = "3.14159";
 		data[6] = "123456.765432";
+		data[7] = "123456765432";
+		data[8] = "99999.74565665432";
 
 		assertFalse(input.process(data));
 	}

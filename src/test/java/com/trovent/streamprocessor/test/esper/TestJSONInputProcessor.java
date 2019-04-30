@@ -203,8 +203,8 @@ class TestJSONInputProcessor {
 		schema.put("ratio", "double");
 		schema.put("distance", "long");
 		schema.put("character", "byte");
-		// schema.put("Hash", "BigInteger");
-		// schema.put("HashDec", "BigDecimal");
+		schema.put("Hash", "BigInteger");
+		schema.put("HashDec", "BigDecimal");
 		engine.addEPLSchema(SCHEMA, schema);
 
 		JSONInputProcessor input = new JSONInputProcessor(engine, SCHEMA);
@@ -232,14 +232,12 @@ class TestJSONInputProcessor {
 		// create data in JSON format
 		String data = "{ \"name\" : \"MyName\", \"age\" : 42, "
 				+ " \"isAdult\" : \"true\", \"average\" : 3.14, \"ratio\" : 12.3456789, "
-				+ " \"distance\" : 987654321, " + " \"character\" : 127 "
-				// + "\"Hash\" : 11112222333344445555666677778888, "
-				// + " \"HashDec\" : 987654321.987654321"
-				+ "}";
+				+ " \"distance\" : 987654321, " + " \"character\" : 127, "
+				+ "\"Hash\" : 11112222333344445555666677778888, " + " \"HashDec\" : 987654321.987654321" + "}";
 		assertTrue(input.process(data));
 
 		while (!listener.isDone)
 			;
-		assertEquals(8, listener.length);
+		assertEquals(10, listener.length);
 	}
 }

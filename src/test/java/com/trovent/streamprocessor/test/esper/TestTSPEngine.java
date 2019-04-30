@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import com.espertech.esper.client.EPException;
 import com.espertech.esper.client.EPStatementException;
+import com.espertech.esper.client.EventType;
 import com.trovent.streamprocessor.esper.TSPEngine;
 
 import junit.framework.TestCase;
@@ -131,6 +132,66 @@ public class TestTSPEngine extends TestCase {
 		newEventType.put("foo", "bar");
 
 		assertThrows(EPException.class, () -> engine.addEPLSchema("TestEvent", newEventType));
+	}
+
+	@Test
+	public void testAddEPLSchemaAsArray() {
+
+		final String SCHEMA_NAME = "TestEventSchema";
+		String[] propNames = new String[7];
+		String[] typeNames = new String[propNames.length];
+
+		propNames[0] = "myString";
+		typeNames[0] = "string";
+		propNames[1] = "myInt";
+		typeNames[1] = "integer";
+		propNames[2] = "myBool";
+		typeNames[2] = "boolean";
+		propNames[3] = "myFloat";
+		typeNames[3] = "float";
+		propNames[4] = "myDouble";
+		typeNames[4] = "double";
+		propNames[5] = "myLong";
+		typeNames[5] = "long";
+		propNames[6] = "myByte";
+		typeNames[6] = "byte";
+
+		engine.addEPLSchema(SCHEMA_NAME, propNames, typeNames);
+		EventType eventType = engine.getEPServiceProvider().getEPAdministrator().getConfiguration()
+				.getEventType(SCHEMA_NAME);
+		assertNotNull(eventType.getPropertyDescriptor("myString"));
+		assertNotNull(eventType.getPropertyDescriptor("myByte"));
+	}
+
+	@Test
+	public void testAddEPLSchemaAsArrayInvalidSize() {
+
+		final String SCHEMA_NAME = "TestEventSchema";
+		String[] propNames = new String[3];
+		String[] typeNames = new String[propNames.length - 1];
+
+		propNames[0] = "myString";
+		typeNames[0] = "string";
+		propNames[1] = "myInt";
+		typeNames[1] = "integer";
+		propNames[2] = "myBool";
+
+		assertThrows(EPException.class, () -> engine.addEPLSchema(SCHEMA_NAME, propNames, typeNames));
+	}
+
+	@Test
+	public void testAddEPLSchemaAsArrayInvalidTypename() {
+
+		final String SCHEMA_NAME = "TestEventSchema";
+		String[] propNames = new String[3];
+		String[] typeNames = new String[propNames.length];
+
+		propNames[0] = "myString";
+		typeNames[0] = "xyz";
+		propNames[1] = "myInt";
+		typeNames[1] = "integer";
+
+		assertThrows(EPException.class, () -> engine.addEPLSchema(SCHEMA_NAME, propNames, typeNames));
 	}
 
 	@Test

@@ -132,7 +132,7 @@ public class TestTSPEngineStatements extends TestCase {
 		statement = "create objectarray schema SomeArrayEventSchema as (first_name string, numbers integer)";
 		engine.addEPLStatement(statement, statementName);
 
-		assertTrue(engine.hasStatement("Bielefeld"));
+		assertFalse(engine.hasStatement("Bielefeld"));
 	}
 
 }

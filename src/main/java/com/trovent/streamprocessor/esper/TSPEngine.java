@@ -30,6 +30,8 @@ public class TSPEngine {
 			lookupTypeName.put("double", Class.forName("java.lang.Double"));
 			lookupTypeName.put("float", Class.forName("java.lang.Float"));
 			lookupTypeName.put("byte", Class.forName("java.lang.Byte"));
+			lookupTypeName.put("biginteger", Class.forName("java.math.BigInteger"));
+			lookupTypeName.put("bigdecimal", Class.forName("java.math.BigDecimal"));
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 		}
@@ -217,7 +219,7 @@ public class TSPEngine {
 		if (epService.getEPAdministrator().getConfiguration().isEventTypeExists(eventTypeName)) {
 			epService.getEPAdministrator().getConfiguration().removeEventType(eventTypeName, false);
 		} else {
-			throw new EPException(String.format("Event with the Name '%s' does not exist", eventTypeName));
+			throw new EPException(String.format("EventType with the Name '%s' does not exist", eventTypeName));
 		}
 	}
 
@@ -229,8 +231,22 @@ public class TSPEngine {
 	 * @param force if true, removes a Schema even if there are Statements depending
 	 *              on it.
 	 */
-	public void removeEPLSchema(String name, boolean force) throws ConfigurationException {
-		epService.getEPAdministrator().getConfiguration().removeEventType(name, force);
+	public void removeEPLSchema(String eventTypeName, boolean force) throws ConfigurationException {
+		if (epService.getEPAdministrator().getConfiguration().isEventTypeExists(eventTypeName)) {
+			epService.getEPAdministrator().getConfiguration().removeEventType(eventTypeName, force);
+		} else {
+			throw new EPException(String.format("EventType with the Name '%s' does not exist", eventTypeName));
+		}
+	}
+
+	public EventType getEventType(String eventTypeName) {
+		EventType lookupType = epService.getEPAdministrator().getConfiguration().getEventType(eventTypeName);
+		if (lookupType != null) {
+			return lookupType;
+		} else {
+			throw new EPException(String.format("EventType with the Name '%s' does not exist", eventTypeName));
+		}
+
 	}
 
 	/**

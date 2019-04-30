@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import com.espertech.esper.client.ConfigurationException;
 import com.espertech.esper.client.EPException;
 import com.espertech.esper.client.EPStatementException;
 import com.espertech.esper.client.EventType;
@@ -120,6 +121,8 @@ public class TestTSPEngine extends TestCase {
 		newEventType.put("myDouble", "double");
 		newEventType.put("myFloat", "float");
 		newEventType.put("myByte", "byte");
+		newEventType.put("myBigInteger", "bigInteger");
+		newEventType.put("myBigDecimal", "bigDecimal");
 
 		engine.addEPLSchema("TestEventSchema", newEventType);
 	}
@@ -237,12 +240,15 @@ public class TestTSPEngine extends TestCase {
 		engine.addEPLStatement(statement, statementName);
 
 		assertTrue(engine.hasSchema(eventTypeName));
-		engine.removeEPLSchema(eventTypeName); // i know this fails
+		assertThrows(ConfigurationException.class, () -> engine.removeEPLSchema(eventTypeName)); // should throw error
+		assertTrue(engine.hasSchema(eventTypeName)); // should still be true
+		engine.removeEPLSchema(eventTypeName, true);
 		assertFalse(engine.hasSchema(eventTypeName));
+		assertTrue(engine.hasStatement(statementName)); // The statement still exists!!
 	}
 
 	@Test
-	public void testRemoveEPLSchemaCreatedByAddEPLStatementInTwoSteps() {
+	public void testRemoveEPLSchemaCreatedByAddEPLStatementByDeletingStatement() {
 		String statement;
 		String statementName = "StatementMadeSchema";
 		String eventTypeName = "eventName";
@@ -257,6 +263,26 @@ public class TestTSPEngine extends TestCase {
 		assertThrows(EPException.class, () -> engine.removeEPLSchema(eventTypeName));
 		assertFalse(engine.hasStatement(statementName));
 		assertFalse(engine.hasSchema(eventTypeName));
+	}
+
+	@Test
+	public void testGetEventType() {
+		this.testAddEPLSchemaAllowedEntries();
+		String eventTypeName = "TestEventSchema"; // from a
+		assertEquals(eventTypeName, (engine.getEventType(eventTypeName).getName()));
+
+		String statement;
+		String statementName = "StatementMadeSchema";
+		eventTypeName = "secondEvent";
+
+		statement = "create objectarray schema " + eventTypeName + " as (first_name string, numbers integer)";
+		engine.addEPLStatement(statement, statementName);
+
+		assertEquals(eventTypeName, (engine.getEventType(eventTypeName).getName()));
+	}
+
+	public void testGetEventTypeForNonexistantEventType() {
+		assertThrows(EPException.class, () -> engine.getEventType("Bielefeld"));
 	}
 
 }

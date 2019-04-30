@@ -15,7 +15,6 @@ public class TSPEngine {
 
 	private EPServiceProvider epService;
 	HashMap<String, EventType> eventTypes;
-	private int statementCounter;
 	Map<String, Class<?>> lookupTypeName;
 
 	public TSPEngine() {
@@ -34,7 +33,6 @@ public class TSPEngine {
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 		}
-
 	}
 
 	/**

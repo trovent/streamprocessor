@@ -5,9 +5,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,18 +25,25 @@ class TestCSVInputProcessor {
 		engine = new TSPEngine();
 		engine.init();
 
-		Map<String, String> schema = new HashMap<String, String>();
-		schema.put("name", "string");
-		schema.put("age", "integer");
-		schema.put("isAdult", "boolean");
-		schema.put("distance", "long");
-		schema.put("character", "byte");
-		schema.put("average", "float");
-		schema.put("ratio", "double");
-		// schema.put("Hash", "BigInteger");
-		// schema.put("HashDec", "BigDecmal");
+		String[] propNames = new String[7];
+		String[] typeNames = new String[propNames.length];
 
-		engine.addEPLSchema(DEFAULT_SCHEMA, schema);
+		propNames[0] = "name";
+		typeNames[0] = "string";
+		propNames[1] = "age";
+		typeNames[1] = "integer";
+		propNames[2] = "isAdult";
+		typeNames[2] = "boolean";
+		propNames[3] = "distance";
+		typeNames[3] = "long";
+		propNames[4] = "character";
+		typeNames[4] = "byte";
+		propNames[5] = "average";
+		typeNames[5] = "float";
+		propNames[6] = "ratio";
+		typeNames[6] = "double";
+
+		engine.addEPLSchema(DEFAULT_SCHEMA, propNames, typeNames);
 	}
 
 	@AfterEach

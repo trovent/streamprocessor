@@ -2,8 +2,6 @@ package com.trovent.streamprocessor;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.HashMap;
-import java.util.Map;
 
 import com.espertech.esper.client.EPException;
 import com.espertech.esper.client.EventPropertyDescriptor;
@@ -44,14 +42,13 @@ public class CSVInputProcessor extends AbstractInputProcessor {
 	 * @return true if the event was processed successfully, false otherwise
 	 */
 	public Boolean process(String[] input) {
-		Map<String, Object> event = new HashMap<String, Object>();
-
 		EventPropertyDescriptor[] descriptors = this.eventType.getPropertyDescriptors();
 		if (descriptors.length > input.length) {
 			logger.warn("cannot process '{}' - not enough data fields ({} needed)", input, descriptors.length);
 			return false;
 		}
 
+		Object[] values = new Object[input.length];
 		int pos = 0;
 		for (EventPropertyDescriptor descriptor : descriptors) {
 			String propName = descriptor.getPropertyName();
@@ -60,23 +57,23 @@ public class CSVInputProcessor extends AbstractInputProcessor {
 			String value = input[pos];
 			try {
 				if (propType == String.class) {
-					event.put(propName, value);
+					values[pos] = value;
 				} else if (propType == Integer.class) {
-					event.put(propName, new Integer(value));
+					values[pos] = new Integer(value);
 				} else if (propType == Boolean.class) {
-					event.put(propName, new Boolean(value));
+					values[pos] = new Boolean(value);
 				} else if (propType == Float.class) {
-					event.put(propName, new Float(value));
+					values[pos] = new Float(value);
 				} else if (propType == Double.class) {
-					event.put(propName, new Double(value));
+					values[pos] = new Double(value);
 				} else if (propType == Long.class) {
-					event.put(propName, new Long(value));
+					values[pos] = new Long(value);
 				} else if (propType == Byte.class) {
-					event.put(propName, new Byte(value));
+					values[pos] = new Byte(value);
 				} else if (propType == BigInteger.class) {
-					event.put(propName, new BigInteger(value));
+					values[pos] = new BigInteger(value);
 				} else if (propType == BigDecimal.class) {
-					event.put(propName, new BigDecimal(value));
+					values[pos] = new BigDecimal(value);
 				}
 			} catch (NumberFormatException e) {
 				logger.warn("type mismatch for value '{}' of field '{}' - could not convert to {}", value, propName,
@@ -86,7 +83,7 @@ public class CSVInputProcessor extends AbstractInputProcessor {
 
 			++pos;
 		}
-		this.engine.sendEPLEvent(this.eventType.getName(), event);
+		this.engine.sendEPLEvent(this.eventType.getName(), values);
 		return true;
 	}
 
@@ -109,6 +106,5 @@ public class CSVInputProcessor extends AbstractInputProcessor {
 		String[] inputAsArray = input.split(";");
 
 		return this.process(inputAsArray);
-
 	}
 }

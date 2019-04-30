@@ -186,6 +186,28 @@ public class TSPEngine {
 		this.epService.getEPAdministrator().getConfiguration().addEventType(name, ev);
 	}
 
+	public void addEPLSchema(String name, String[] propNames, String[] propTypeNames) throws EPException {
+		/*
+		 * propNames: [ "name", "age ] propTypeNames : [ "string", "integer" ]
+		 */
+
+		if (propNames.length != propTypeNames.length) {
+			throw new EPException(String.format("number of property names and type names do not match (%d!=%d)",
+					propNames.length, propTypeNames.length));
+		}
+		Object[] propTypes = new Object[propTypeNames.length];
+
+		for (int pos = 0; pos < propNames.length; pos++) {
+			Class<?> javaType = lookupTypeName.get(propTypeNames[pos].toLowerCase());
+			if (javaType == null) {
+				throw new EPException(String.format("can not find type with name '%s'", propTypeNames[pos]));
+			}
+			propTypes[pos] = javaType;
+		}
+
+		this.epService.getEPAdministrator().getConfiguration().addEventType(name, propNames, propTypes);
+	}
+
 	/**
 	 * removes a Schema with the given Name
 	 * 

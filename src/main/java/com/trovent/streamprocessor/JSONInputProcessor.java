@@ -1,77 +1,55 @@
 package com.trovent.streamprocessor;
 
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.espertech.esper.client.EPException;
 import com.espertech.esper.client.EventPropertyDescriptor;
-import com.espertech.esper.client.EventType;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
-import com.trovent.streamprocessor.kafka.InputProcessor;
 import com.trovent.streamprocessor.esper.TSPEngine;
 
-public class JSONInputProcessor implements InputProcessor {
+/**
+ * This class process an event given as a JSON string and parses it and passes
+ * it to the given event type of esper engine.
+ * 
+ */
+public class JSONInputProcessor extends AbstractInputProcessor {
 
-	// private EventType eventType;
-
-	// void PlaintextInputProcessor(EsperService service, String eventTypeName) {
-
-	private Logger logger;
-
-	private TSPEngine engine;
-
-	private EventType eventType;
-
-	public TSPEngine getEngine() {
-		return engine;
-	}
-
-	public EventType getEventType() {
-		return eventType;
-	}
-
+	/**
+	 * Constructor of JSONInputProcessor
+	 * 
+	 * @param engine Sets the engine to use for event processing
+	 */
 	public JSONInputProcessor(TSPEngine engine) {
-		this.engine = engine;
-		this.logger = LogManager.getLogger();
+		super(engine);
 	}
 
+	/**
+	 * Constructor of JSONInputProcessor
+	 * 
+	 * @param engine        Sets the engine to use for event processing
+	 * 
+	 * @param eventTypeName Sets the event type to use. The incoming data must match
+	 *                      this format.
+	 */
 	public JSONInputProcessor(TSPEngine engine, String eventTypeName) throws EPException {
-		this.engine = engine;
-		this.logger = LogManager.getLogger();
-
-		logger.info("creating JSONINputProcessor for eventType '{}'", eventTypeName);
-
-		this.setEventType(eventTypeName);
+		super(engine, eventTypeName);
 	}
 
-	public void setEventType(String eventTypeName) throws EPException {
-		this.eventType = this.engine.getEPServiceProvider().getEPAdministrator().getConfiguration()
-				.getEventType(eventTypeName);
-
-		if (this.eventType == null) {
-			throw new EPException(String.format("EventType '%s' not found", eventTypeName));
-		}
-
-		try {
-			// dump info about event type
-			logger.info("# Definition of event type #");
-
-			EventPropertyDescriptor[] descriptors = this.eventType.getPropertyDescriptors();
-			for (EventPropertyDescriptor field : descriptors) {
-				logger.info("\tname: {}  \ttype: {}", field.getPropertyName(), field.getPropertyType().toString());
-			}
-
-		} catch (Exception e) {
-			logger.error("Failed to set eventType '{}'", eventTypeName);
-			logger.error(e);
-		}
-	}
-
+	/**
+	 * Process the incoming data given as Map. If the format matches the previously
+	 * set event type, the data is transformed into an esper event and sent to the
+	 * engine. The method fails and returns true if it detects a type mismatch or
+	 * required fields are missing.
+	 * 
+	 * @param input The input event given as key-value pairs
+	 * @return true if the event was processed successfully, false otherwise
+	 */
 	public Boolean process(Map<String, String> input) {
 		Map<String, Object> event = new HashMap<String, Object>();
 		for (EventPropertyDescriptor descriptor : this.eventType.getPropertyDescriptors()) {
@@ -82,19 +60,51 @@ public class JSONInputProcessor implements InputProcessor {
 				logger.warn("cannot process '{}' - field '{}' is missing", input, propName);
 				return false;
 			}
-			if (propType == String.class) {
-				event.put(propName, input.get(propName));
-			} else if (propType == Integer.class) {
-				event.put(propName, new Integer(input.get(propName)));
-			} else if (propType == Boolean.class) {
-				event.put(propName, new Boolean(input.get(propName)));
+
+			String value = input.get(propName);
+			try {
+				if (propType == String.class) {
+					event.put(propName, value);
+				} else if (propType == Integer.class) {
+					event.put(propName, new Integer(value));
+				} else if (propType == Boolean.class) {
+					event.put(propName, new Boolean(value));
+				} else if (propType == Float.class) {
+					event.put(propName, new Float(value));
+				} else if (propType == Double.class) {
+					event.put(propName, new Double(value));
+				} else if (propType == Long.class) {
+					event.put(propName, new Long(value));
+				} else if (propType == Byte.class) {
+					event.put(propName, new Byte(value));
+				} else if (propType == BigInteger.class) {
+					event.put(propName, new BigInteger(value));
+				} else if (propType == BigDecimal.class) {
+					event.put(propName, new BigDecimal(value));
+				}
+			} catch (NumberFormatException e) {
+				logger.warn("type mismatch for value '{}' of field '{}' - could not convert to {}", value, propName,
+						propType.toString());
+				return false;
 			}
-			// continue checking other types
+
 		}
 		this.engine.sendEPLEvent(this.eventType.getName(), event);
 		return true;
 	}
 
+	/**
+	 * Process the incoming data given as json string. The json string is parsed and
+	 * transformed into Map<String, String>. If the format matches the previously
+	 * set event type, the data is transformed into an esper event and sent to the
+	 * engine.
+	 * 
+	 * @param input The input event given json string e.g.
+	 *              <code>{ "name" : "Trovent",
+	 *              "year" : 2019 }</code>
+	 * @return true if the event was processed successfully, false otherwise
+	 */
+	@Override
 	public Boolean process(String input) {
 
 		this.logger.debug(String.format("input: '%s'", input));
@@ -103,9 +113,14 @@ public class JSONInputProcessor implements InputProcessor {
 		}.getType();
 
 		Gson gson = new Gson();
-		Map<String, String> inputAsMap = gson.fromJson(input, mapToken);
-
-		return this.process(inputAsMap);
+		try {
+			Map<String, String> inputAsMap = gson.fromJson(input, mapToken);
+			return this.process(inputAsMap);
+		} catch (JsonSyntaxException e) {
+			this.logger.warn(e);
+			this.logger.warn("input: {}", input);
+			return false;
+		}
 
 	}
 }

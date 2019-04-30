@@ -39,6 +39,7 @@ class TestJSONInputProcessor {
 
 	@AfterEach
 	void tearDown() throws Exception {
+		engine.shutdown();
 	}
 
 	@Test
@@ -127,6 +128,23 @@ class TestJSONInputProcessor {
 	}
 
 	@Test
+	void testProcessWithTypeConversionError() {
+		JSONInputProcessor input = new JSONInputProcessor(engine, DEFAULT_SCHEMA);
+
+		// create statement, add to engine
+		final String STMT_NAME = "MyStatement";
+		String stmt = "select *, sum(age), count(*) from " + DEFAULT_SCHEMA;
+		this.engine.addEPLStatement(stmt, STMT_NAME);
+
+		// create malformed data in JSON format
+		Map<String, String> data = new HashMap<String, String>();
+		data.put("name", "John Doe");
+		data.put("age", "abc");
+		data.put("isAdult", "true");
+		assertFalse(input.process(data));
+	}
+
+	@Test
 	void testProcessWithJSONInput() {
 		JSONInputProcessor input = new JSONInputProcessor(engine, DEFAULT_SCHEMA);
 
@@ -136,26 +154,92 @@ class TestJSONInputProcessor {
 		this.engine.addEPLStatement(stmt, STMT_NAME);
 
 		// create listener with tests
-		class MyListener implements UpdateListener {			
-			Boolean isDone = false;			
+		class MyListener implements UpdateListener {
+			Boolean isDone = false;
 			int length = 0;
-			
-			public void update(EventBean[] newEvents, EventBean[] oldEvents) {				
-				this.length  = newEvents[0].getEventType().getPropertyNames().length;
+
+			public void update(EventBean[] newEvents, EventBean[] oldEvents) {
+				this.length = newEvents[0].getEventType().getPropertyNames().length;
 				this.isDone = true;
 			}
 		}
 		// add listener to statement
 		MyListener listener = new MyListener();
 		this.engine.addListener(STMT_NAME, listener);
-		assertEquals(0,  listener.length);
-		
+		assertEquals(0, listener.length);
+
 		// create data in JSON format
 		String data = "{ \"name\" : \"MyName\", \"age\" : 42, \"isAdult\" : \"true\" }";
 		assertTrue(input.process(data));
-				
+
 		while (!listener.isDone)
-			;		
-		assertEquals(5,  listener.length);		
+			;
+		assertEquals(5, listener.length);
+	}
+
+	@Test
+	void testProcessWithMalformedJSONInput() {
+		JSONInputProcessor input = new JSONInputProcessor(engine, DEFAULT_SCHEMA);
+
+		// create statement, add to engine
+		final String STMT_NAME = "MyStatement";
+		String stmt = "select *, sum(age), count(*) from " + DEFAULT_SCHEMA;
+		this.engine.addEPLStatement(stmt, STMT_NAME);
+
+		// create malformed data in JSON format
+		String data = "{ \"name\" : \"MyName, }";
+		assertFalse(input.process(data));
+	}
+
+	@Test
+	void testProcessWithAllTypes() {
+		final String SCHEMA = "AllTypes";
+
+		Map<String, String> schema = new HashMap<String, String>();
+		schema.put("name", "string");
+		schema.put("age", "integer");
+		schema.put("isAdult", "boolean");
+		schema.put("average", "float");
+		schema.put("ratio", "double");
+		schema.put("distance", "long");
+		schema.put("character", "byte");
+		// schema.put("Hash", "BigInteger");
+		// schema.put("HashDec", "BigDecimal");
+		engine.addEPLSchema(SCHEMA, schema);
+
+		JSONInputProcessor input = new JSONInputProcessor(engine, SCHEMA);
+
+		// create statement, add to engine
+		final String STMT_NAME = "MyStatement";
+		String stmt = "select *, sum(age) from " + SCHEMA;
+		this.engine.addEPLStatement(stmt, STMT_NAME);
+
+		// create listener with tests
+		class MyListener implements UpdateListener {
+			Boolean isDone = false;
+			int length = 0;
+
+			public void update(EventBean[] newEvents, EventBean[] oldEvents) {
+				this.length = newEvents[0].getEventType().getPropertyNames().length;
+				this.isDone = true;
+			}
+		}
+		// add listener to statement
+		MyListener listener = new MyListener();
+		this.engine.addListener(STMT_NAME, listener);
+		assertEquals(0, listener.length);
+
+		// create data in JSON format
+		String data = "{ \"name\" : \"MyName\", \"age\" : 42, "
+				+ " \"isAdult\" : \"true\", \"average\" : 3.14, \"ratio\" : 12.3456789, "
+				+ " \"distance\" : 987654321, " + " \"character\" : 127 "
+				// + "\"Hash\" : 11112222333344445555666677778888, "
+				// + " \"HashDec\" : 987654321.987654321"
+				+ "}";
+		assertTrue(input.process(data));
+
+		while (!listener.isDone)
+			;
+		assertEquals(8, listener.length);
 	}
 }

@@ -7,6 +7,7 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -14,29 +15,43 @@ import javax.ws.rs.core.MediaType;
 import org.glassfish.jersey.internal.util.Producer;
 
 import com.trovent.streamprocessor.esper.EplStatement;
+import com.trovent.streamprocessor.esper.TSPEngine;
 
 @Path("api")
 public class EsperService {
 
-	@GET
-	@Path("hello")
-	@Produces(MediaType.TEXT_PLAIN)
-	public String hello() {
-		return "Hello World!\n";
+	static TSPEngine epService = null;
+
+	public EsperService() {
+		if (epService == null)
+			epService = TSPEngine.create();
 	}
 
-	@POST
-	@Path("addEplStatement")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public EplStatement addEplStatement(EplStatement stmt) {
-		// TODO create statement, add to engine, add to list, return id
+	@GET
+	@Path("statement/{name}")
+	@Produces(MediaType.TEXT_PLAIN)
+	public EplStatement getEplStatement(@PathParam("name") String name) {
+		EplStatement stmt = new EplStatement();
+		if (epService.hasStatement(name)) {
+			stmt.name = name;
+			stmt.expression = epService.getStatementExpression(name);
+			return stmt;
+		}
 		return stmt;
 	}
 
-	public void deleteEplStatement(String name) {
-		// TODO: delete from engine and list
-		return;
+	@POST
+	@Path("statement")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.TEXT_PLAIN)
+	public String addEplStatement(EplStatement stmt) {
+		return epService.addEPLStatement(stmt.name, stmt.expression);
+	}
+
+	@DELETE
+	@Path("statement/{name}")
+	public void deleteEplStatement(@PathParam("name") String name) {
+		epService.removeEPLStatement(name);
 	}
 
 	// { "topic" : "mytopic", "eventname" : "myeventname" }

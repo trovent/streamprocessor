@@ -168,4 +168,10 @@ public class TestTSPEngineStatements extends TestCase {
 		assertEquals(map.get("MapStatement"), "select count(first_name) as cntFirst_Name from SomeMapEventSchema");
 	}
 
+	@Test
+	public void testgetStatementExpression() {
+		String ExpressionToGet = "create map schema SomeMapEventSchema as (first_name string, numbers integer)";
+		String ExpressionHasGotten = engine.getStatementExpression("MapSchema");
+		assertEquals(ExpressionToGet, ExpressionHasGotten);
+	}
 }

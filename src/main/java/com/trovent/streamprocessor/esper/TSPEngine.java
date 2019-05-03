@@ -150,6 +150,16 @@ public class TSPEngine {
 	}
 
 	/**
+	 * returns the content of a statement.
+	 * 
+	 * @param statementName
+	 * @return
+	 */
+	public String getStatementExpression(String statementName) {
+		return epService.getEPAdministrator().getStatement(statementName).getText();
+	}
+
+	/**
 	 * Looks into Configuration and checks if Schema with the given Name exists
 	 * 
 	 * @param eventTypeName Name of the Schema

@@ -281,6 +281,7 @@ public class TestTSPEngine extends TestCase {
 		assertEquals(eventTypeName, (engine.getEventType(eventTypeName).getName()));
 	}
 
+	@Test
 	public void testGetEventTypeForNonexistantEventType() {
 		assertThrows(EPException.class, () -> engine.getEventType("Bielefeld"));
 	}

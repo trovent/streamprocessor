@@ -1,5 +1,7 @@
 package com.trovent.streamprocessor.esper;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -22,20 +24,16 @@ public class TSPEngine {
 		eventTypes = new HashMap<String, EventType>();
 
 		lookupTypeName = new HashMap<String, Class<?>>();
-		try {
-			lookupTypeName.put("string", Class.forName("java.lang.String"));
-			lookupTypeName.put("integer", Class.forName("java.lang.Integer"));
-			lookupTypeName.put("int", Class.forName("java.lang.Integer"));
-			lookupTypeName.put("boolean", Class.forName("java.lang.Boolean"));
-			lookupTypeName.put("long", Class.forName("java.lang.Long"));
-			lookupTypeName.put("double", Class.forName("java.lang.Double"));
-			lookupTypeName.put("float", Class.forName("java.lang.Float"));
-			lookupTypeName.put("byte", Class.forName("java.lang.Byte"));
-			lookupTypeName.put("biginteger", Class.forName("java.math.BigInteger"));
-			lookupTypeName.put("bigdecimal", Class.forName("java.math.BigDecimal"));
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-		}
+		lookupTypeName.put("string", String.class);
+		lookupTypeName.put("integer", int.class);
+		lookupTypeName.put("int", int.class);
+		lookupTypeName.put("boolean", boolean.class);
+		lookupTypeName.put("long", long.class);
+		lookupTypeName.put("double", double.class);
+		lookupTypeName.put("float", float.class);
+		lookupTypeName.put("byte", byte.class);
+		lookupTypeName.put("biginteger", BigInteger.class);
+		lookupTypeName.put("bigdecimal", BigDecimal.class);
 	}
 
 	/**

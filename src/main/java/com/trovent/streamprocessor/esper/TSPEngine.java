@@ -36,7 +36,8 @@ public class TSPEngine {
 	}
 
 	/**
-	 * returns the
+	 * returns the (unique) TSPEngine <br>
+	 * creates a new one if it currently does not exist
 	 * 
 	 * @return
 	 */

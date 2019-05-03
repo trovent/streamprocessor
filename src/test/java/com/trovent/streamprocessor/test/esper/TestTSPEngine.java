@@ -266,7 +266,7 @@ public class TestTSPEngine extends TestCase {
 	}
 
 	@Test
-	public void testGetEventType() {
+	public void testGetEPLSchema() {
 		this.testAddEPLSchemaAllowedEntries();
 		String eventTypeName = "TestEventSchema"; // from a
 		assertEquals(eventTypeName, (engine.getEPLSchema(eventTypeName).getName()));
@@ -282,7 +282,7 @@ public class TestTSPEngine extends TestCase {
 	}
 
 	@Test
-	public void testGetEventTypeForNonexistantEventType() {
+	public void testGetEPLSchemaForNonexistantEventType() {
 		assertThrows(EPException.class, () -> engine.getEPLSchema("Bielefeld"));
 	}
 

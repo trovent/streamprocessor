@@ -1,6 +1,7 @@
 package com.trovent.streamprocessor.esper;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.espertech.esper.client.ConfigurationException;
@@ -123,6 +124,31 @@ public class TSPEngine {
 		} else {
 			throw new EPException(String.format("there is no statement with the name '%s'", name));
 		}
+	}
+
+	/**
+	 * returns an array of the names of all statements
+	 * 
+	 * @return
+	 */
+	public String[] getStatementNames() {
+		return epService.getEPAdministrator().getStatementNames();
+	}
+
+	/**
+	 * returns a Map, with the statement names as key and the expression as content
+	 * 
+	 * @return
+	 */
+	public Map<String, String> getStatements() {
+		String[] statementNames = getStatementNames();
+		Map<String, String> statements = new LinkedHashMap<String, String>();
+
+		for (String s : statementNames) {
+			statements.put(s, epService.getEPAdministrator().getStatement(s).getText());
+		}
+
+		return statements;
 	}
 
 	/**

@@ -2,6 +2,8 @@ package com.trovent.streamprocessor.test.esper;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.Map;
+
 import org.junit.Test;
 
 import com.espertech.esper.client.EPException;
@@ -133,6 +135,37 @@ public class TestTSPEngineStatements extends TestCase {
 		engine.addEPLStatement(statement, statementName);
 
 		assertFalse(engine.hasStatement("Bielefeld"));
+	}
+
+	@Test
+	public void testGetStatementNames() {
+		String statement;
+		String statementName = "ArraySchema";
+		statement = "create objectarray schema SomeArrayEventSchema as (first_name string, numbers integer)";
+		engine.addEPLStatement(statement, statementName);
+
+		statement = "select count(first_name) as cntFirst_Name from SomeArrayEventSchema";
+		engine.addEPLStatement(statement, "ArrayStatement 1");
+
+		statement = "select count(first_name) as cntFirst_Namewohoo from SomeArrayEventSchema";
+		engine.addEPLStatement(statement, "ArrayStatement 2");
+
+		statement = "select count(first_name) as iCanPutAnythingInHere from SomeArrayEventSchema";
+		engine.addEPLStatement(statement, "ArrayStatement 3");
+
+		String[] AllNames = engine.getStatementNames();
+
+		assertEquals(6, AllNames.length);
+
+	}
+
+	@Test
+	public void testGetStatements() {
+		Map<String, String> map = engine.getStatements();
+
+		assertEquals(map.get("MapSchema"),
+				"create map schema SomeMapEventSchema as (first_name string, numbers integer)");
+		assertEquals(map.get("MapStatement"), "select count(first_name) as cntFirst_Name from SomeMapEventSchema");
 	}
 
 }

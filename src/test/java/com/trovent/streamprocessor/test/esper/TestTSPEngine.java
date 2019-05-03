@@ -200,7 +200,7 @@ public class TestTSPEngine extends TestCase {
 	@Test
 	public void testHasSchemaForSchemaExists() {
 		this.testAddEPLSchemaAllowedEntries();
-		assertTrue(engine.hasSchema("TestEventSchema"));
+		assertTrue(engine.hasEPLSchema("TestEventSchema"));
 	}
 
 	@Test
@@ -211,24 +211,24 @@ public class TestTSPEngine extends TestCase {
 		statement = "create objectarray schema " + eventTypeName + " as (first_name string, numbers integer)";
 		engine.addEPLStatement(statement, statementName);
 
-		assertFalse(engine.hasSchema(statementName));
+		assertFalse(engine.hasEPLSchema(statementName));
 		assertFalse(engine.hasStatement(eventTypeName));
-		assertTrue(engine.hasSchema(eventTypeName));
+		assertTrue(engine.hasEPLSchema(eventTypeName));
 		assertTrue(engine.hasStatement(statementName));
 	}
 
 	@Test
 	public void testHasSchemaForSchemaDoesNotExist() {
 		this.testAddEPLSchemaAllowedEntries();
-		assertFalse(engine.hasSchema("Bielefeld"));
+		assertFalse(engine.hasEPLSchema("Bielefeld"));
 	}
 
 	@Test
 	public void testRemoveEPLSchema() {
 		this.testAddEPLSchemaAllowedEntries();
-		assertTrue(engine.hasSchema("TestEventSchema"));
+		assertTrue(engine.hasEPLSchema("TestEventSchema"));
 		engine.removeEPLSchema("TestEventSchema");
-		assertFalse(engine.hasSchema("TestEventSchema"));
+		assertFalse(engine.hasEPLSchema("TestEventSchema"));
 	}
 
 	@Test
@@ -239,11 +239,11 @@ public class TestTSPEngine extends TestCase {
 		statement = "create objectarray schema " + eventTypeName + " as (first_name string, numbers integer)";
 		engine.addEPLStatement(statement, statementName);
 
-		assertTrue(engine.hasSchema(eventTypeName));
+		assertTrue(engine.hasEPLSchema(eventTypeName));
 		assertThrows(ConfigurationException.class, () -> engine.removeEPLSchema(eventTypeName)); // should throw error
-		assertTrue(engine.hasSchema(eventTypeName)); // should still be true
+		assertTrue(engine.hasEPLSchema(eventTypeName)); // should still be true
 		engine.removeEPLSchema(eventTypeName, true);
-		assertFalse(engine.hasSchema(eventTypeName));
+		assertFalse(engine.hasEPLSchema(eventTypeName));
 		assertTrue(engine.hasStatement(statementName)); // The statement still exists!!
 	}
 
@@ -255,21 +255,21 @@ public class TestTSPEngine extends TestCase {
 		statement = "create objectarray schema " + eventTypeName + " as (first_name string, numbers integer)";
 		engine.addEPLStatement(statement, statementName);
 
-		assertTrue(engine.hasSchema(eventTypeName));
+		assertTrue(engine.hasEPLSchema(eventTypeName));
 		assertTrue(engine.hasStatement(statementName));
 		engine.removeEPLStatement(statementName);
 		// assertTrue(engine.hasSchema(eventTypeName));
 		assertFalse(engine.hasStatement(statementName));
 		assertThrows(EPException.class, () -> engine.removeEPLSchema(eventTypeName));
 		assertFalse(engine.hasStatement(statementName));
-		assertFalse(engine.hasSchema(eventTypeName));
+		assertFalse(engine.hasEPLSchema(eventTypeName));
 	}
 
 	@Test
 	public void testGetEventType() {
 		this.testAddEPLSchemaAllowedEntries();
 		String eventTypeName = "TestEventSchema"; // from a
-		assertEquals(eventTypeName, (engine.getEventType(eventTypeName).getName()));
+		assertEquals(eventTypeName, (engine.getEPLSchema(eventTypeName).getName()));
 
 		String statement;
 		String statementName = "StatementMadeSchema";
@@ -278,12 +278,12 @@ public class TestTSPEngine extends TestCase {
 		statement = "create objectarray schema " + eventTypeName + " as (first_name string, numbers integer)";
 		engine.addEPLStatement(statement, statementName);
 
-		assertEquals(eventTypeName, (engine.getEventType(eventTypeName).getName()));
+		assertEquals(eventTypeName, (engine.getEPLSchema(eventTypeName).getName()));
 	}
 
 	@Test
 	public void testGetEventTypeForNonexistantEventType() {
-		assertThrows(EPException.class, () -> engine.getEventType("Bielefeld"));
+		assertThrows(EPException.class, () -> engine.getEPLSchema("Bielefeld"));
 	}
 
 }

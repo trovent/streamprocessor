@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Map;
 
+//import org.junit.jupiter.api.Test;
+
 import org.junit.Test;
 
 import com.espertech.esper.client.EPException;
@@ -42,13 +44,11 @@ public class TestTSPEngineStatements extends TestCase {
 		super.tearDown();
 	}
 
-	@Test
 	public void testStartEPLStatement() {
 		engine.startEPLStatement("MapStatement");
 		assertTrue(engine.getEPServiceProvider().getEPAdministrator().getStatement("MapStatement").isStarted());
 	}
 
-	@Test
 	public void testStartEPLStatementSCHEMA() {
 		engine.stopEPLStatement("MapSchema");
 		assertFalse(engine.getEPServiceProvider().getEPAdministrator().getStatement("MapSchema").isStarted());
@@ -57,31 +57,27 @@ public class TestTSPEngineStatements extends TestCase {
 		assertTrue(engine.getEPServiceProvider().getEPAdministrator().getStatement("MapSchema").isStarted());
 	}
 
-	@Test
 	public void testStartEPLStatementForNonexistantStatement() {
 		assertThrows(EPException.class, () -> engine.startEPLStatement("Bielefeld"));
 	}
 
-	@Test
 	public void testStopEPLStatement() {
 		assertTrue(engine.getEPServiceProvider().getEPAdministrator().getStatement("MapStatement").isStarted());
 		engine.stopEPLStatement("MapStatement");
 		assertTrue(engine.getEPServiceProvider().getEPAdministrator().getStatement("MapStatement").isStopped());
 	}
 
-	@Test
 	public void testStopEPLStatementSCHEMA() {
 		assertTrue(engine.getEPServiceProvider().getEPAdministrator().getStatement("MapSchema").isStarted());
 		engine.stopEPLStatement("MapSchema");
 		assertTrue(engine.getEPServiceProvider().getEPAdministrator().getStatement("MapSchema").isStopped());
 	}
 
-	@Test
 	public void testStopEPLStatementForNonexistantStatement() {
 		assertThrows(EPException.class, () -> engine.stopEPLStatement("Bielefeld"));
 	}
 
-	@Test // TODO
+	// TODO
 	public void testRemoveEPLStatement() {
 		engine.removeEPLStatement("MapStatement");
 	}
@@ -147,7 +143,7 @@ public class TestTSPEngineStatements extends TestCase {
 		statement = "select count(first_name) as cntFirst_Name from SomeArrayEventSchema";
 		engine.addEPLStatement(statement, "ArrayStatement 1");
 
-		statement = "select count(first_name) as cntFirst_Namewohoo from SomeArrayEventSchema";
+		statement = "select count(first_name) as cntFirst_Namespace from SomeArrayEventSchema";
 		engine.addEPLStatement(statement, "ArrayStatement 2");
 
 		statement = "select count(first_name) as iCanPutAnythingInHere from SomeArrayEventSchema";

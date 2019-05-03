@@ -174,7 +174,7 @@ public class TSPEngine {
 	 * @param eventTypeName Name of the Schema
 	 * @return
 	 */
-	public boolean hasSchema(String eventTypeName) {
+	public boolean hasEPLSchema(String eventTypeName) {
 		return epService.getEPAdministrator().getConfiguration().isEventTypeExists(eventTypeName);
 	}
 
@@ -282,7 +282,7 @@ public class TSPEngine {
 		}
 	}
 
-	public EventType getEventType(String eventTypeName) {
+	public EventType getEPLSchema(String eventTypeName) {
 		EventType lookupType = epService.getEPAdministrator().getConfiguration().getEventType(eventTypeName);
 		if (lookupType != null) {
 			return lookupType;

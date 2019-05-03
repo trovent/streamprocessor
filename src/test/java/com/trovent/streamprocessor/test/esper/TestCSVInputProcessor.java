@@ -1,27 +1,23 @@
 package com.trovent.streamprocessor.test.esper;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import com.espertech.esper.client.EPException;
 import com.trovent.streamprocessor.CSVInputProcessor;
 import com.trovent.streamprocessor.JSONInputProcessor;
 import com.trovent.streamprocessor.esper.TSPEngine;
 
-class TestCSVInputProcessor {
+import junit.framework.TestCase;
+
+public class TestCSVInputProcessor extends TestCase {
 
 	private TSPEngine engine;
 
 	final String DEFAULT_SCHEMA = "myschema";
 
-	@BeforeEach
-	void setUp() throws Exception {
+	protected void setUp() throws Exception {
 		engine = new TSPEngine();
 		engine.init();
 
@@ -50,25 +46,24 @@ class TestCSVInputProcessor {
 		engine.addEPLSchema(DEFAULT_SCHEMA, propNames, typeNames);
 	}
 
-	@AfterEach
-	void tearDown() throws Exception {
+	protected void tearDown() throws Exception {
 		engine.shutdown();
 	}
 
 	@Test
-	void testCreateProcessor() {
+	public void testCreateProcessor() {
 		CSVInputProcessor input = new CSVInputProcessor(engine);
 		assertEquals(engine, input.getEngine());
 	}
 
 	@Test
-	void testSetEventTypeWithNonExistingEventType() {
+	public void testSetEventTypeWithNonExistingEventType() {
 		CSVInputProcessor input = new CSVInputProcessor(engine);
 		assertThrows(EPException.class, () -> input.setEventType("NonExisting"));
 	}
 
 	@Test
-	void testSetEventType() {
+	public void testSetEventType() {
 		CSVInputProcessor input = new CSVInputProcessor(engine);
 		// shall not throw exception
 		input.setEventType(DEFAULT_SCHEMA);
@@ -77,19 +72,19 @@ class TestCSVInputProcessor {
 	}
 
 	@Test
-	void testCreateProcessorWithNotExistingEventType() {
+	public void testCreateProcessorWithNotExistingEventType() {
 		assertThrows(EPException.class, () -> new JSONInputProcessor(engine, "NonExisting"));
 	}
 
 	@Test
-	void testCreateProcessorWithExistingEventType() {
+	public void testCreateProcessorWithExistingEventType() {
 		CSVInputProcessor input = new CSVInputProcessor(engine, DEFAULT_SCHEMA);
 
 		assertEquals(DEFAULT_SCHEMA, input.getEventType().getName());
 	}
 
 	@Test
-	void testProcessWithArrayFailed() {
+	public void testProcessWithArrayFailed() {
 		CSVInputProcessor input = new CSVInputProcessor(engine, DEFAULT_SCHEMA);
 
 		String[] data = new String[2];
@@ -100,7 +95,7 @@ class TestCSVInputProcessor {
 	}
 
 	@Test
-	void testProcessWithArraySuccess() {
+	public void testProcessWithArraySuccess() {
 		CSVInputProcessor input = new CSVInputProcessor(engine, DEFAULT_SCHEMA);
 
 		String[] data = new String[9];
@@ -118,7 +113,7 @@ class TestCSVInputProcessor {
 	}
 
 	@Test
-	void testProcessWithCSVString() {
+	public void testProcessWithCSVString() {
 		CSVInputProcessor input = new CSVInputProcessor(engine, DEFAULT_SCHEMA);
 
 		String data = "MyName;42;true;947875;-128;1234.665;98765.98765;9876543210000;56789.111222333444555";
@@ -126,7 +121,7 @@ class TestCSVInputProcessor {
 	}
 
 	@Test
-	void testProcessWithTypeError() {
+	public void testProcessWithTypeError() {
 		CSVInputProcessor input = new CSVInputProcessor(engine, DEFAULT_SCHEMA);
 
 		String[] data = new String[9];

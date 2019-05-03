@@ -17,12 +17,11 @@ import com.espertech.esper.client.UpdateListener;
 public class TSPEngine {
 
 	private EPServiceProvider epService;
-	HashMap<String, EventType> eventTypes;
 	Map<String, Class<?>> lookupTypeName;
 
-	public TSPEngine() {
-		eventTypes = new HashMap<String, EventType>();
+	private static TSPEngine engine = null;
 
+	private TSPEngine() {
 		lookupTypeName = new HashMap<String, Class<?>>();
 		lookupTypeName.put("string", String.class);
 		lookupTypeName.put("integer", int.class);
@@ -37,8 +36,19 @@ public class TSPEngine {
 	}
 
 	/**
+	 * returns the
+	 * 
+	 * @return
+	 */
+	public static TSPEngine create() {
+		if (engine == null) {
+			engine = new TSPEngine();
+		}
+		return engine;
+	}
+
+	/**
 	 * Initializes the Service Provider Configures the Engine using the
-	 * configuration xml(not created)
 	 */
 	public void init() {
 
@@ -57,10 +67,11 @@ public class TSPEngine {
 	public void shutdown() {
 		epService.destroy();
 		epService = null;
+
 	}
 
 	/**
-	 * Creates a new EsperStatement and an identifying name and assigns a unique id
+	 * Creates a new EsperStatement and an identifying name
 	 * 
 	 * @param statement     the specifications of the new Statement this will be
 	 *                      used to select certain types of event
@@ -75,8 +86,6 @@ public class TSPEngine {
 		// creates a new Statement
 		EPStatement eplStatement;
 		eplStatement = epService.getEPAdministrator().createEPL(statement, statementName);
-
-		this.eventTypes.put(eplStatement.getEventType().getName(), eplStatement.getEventType());
 
 		return eplStatement.getName();
 	}
@@ -93,7 +102,6 @@ public class TSPEngine {
 		} else {
 			throw new EPException(String.format("there is no statement with the name '%s'", name));
 		}
-		// TODO remove eventtype from Map
 	}
 
 	/**

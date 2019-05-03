@@ -23,7 +23,7 @@ public class TestJSONInputProcessor extends TestCase {
 	final String DEFAULT_SCHEMA = "myschema";
 
 	protected void setUp() throws Exception {
-		engine = new TSPEngine();
+		engine = TSPEngine.create();
 		engine.init();
 
 		Map<String, String> schema = new HashMap<String, String>();

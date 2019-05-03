@@ -18,7 +18,7 @@ public class TestCSVInputProcessor extends TestCase {
 	final String DEFAULT_SCHEMA = "myschema";
 
 	protected void setUp() throws Exception {
-		engine = new TSPEngine();
+		engine = TSPEngine.create();
 		engine.init();
 
 		String[] propNames = new String[9];

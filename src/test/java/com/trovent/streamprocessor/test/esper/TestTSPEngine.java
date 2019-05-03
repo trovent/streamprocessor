@@ -26,7 +26,7 @@ public class TestTSPEngine extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 
-		engine = new TSPEngine();
+		engine = TSPEngine.create();
 		engine.init();
 	}
 

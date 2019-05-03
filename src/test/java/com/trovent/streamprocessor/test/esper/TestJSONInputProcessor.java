@@ -1,16 +1,11 @@
 package com.trovent.streamprocessor.test.esper;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import com.espertech.esper.client.EPException;
 import com.espertech.esper.client.EPStatement;
@@ -19,14 +14,15 @@ import com.espertech.esper.client.UpdateListener;
 import com.trovent.streamprocessor.JSONInputProcessor;
 import com.trovent.streamprocessor.esper.TSPEngine;
 
-class TestJSONInputProcessor {
+import junit.framework.TestCase;
+
+public class TestJSONInputProcessor extends TestCase {
 
 	private TSPEngine engine;
 
 	final String DEFAULT_SCHEMA = "myschema";
 
-	@BeforeEach
-	void setUp() throws Exception {
+	protected void setUp() throws Exception {
 		engine = new TSPEngine();
 		engine.init();
 
@@ -37,25 +33,24 @@ class TestJSONInputProcessor {
 		engine.addEPLSchema(DEFAULT_SCHEMA, schema);
 	}
 
-	@AfterEach
-	void tearDown() throws Exception {
+	protected void tearDown() throws Exception {
 		engine.shutdown();
 	}
 
 	@Test
-	void testCreateProcessor() {
+	public void testCreateProcessor() {
 		JSONInputProcessor input = new JSONInputProcessor(engine);
 		assertEquals(engine, input.getEngine());
 	}
 
 	@Test
-	void testSetEventTypeWithNonExistingEventType() {
+	public void testSetEventTypeWithNonExistingEventType() {
 		JSONInputProcessor input = new JSONInputProcessor(engine);
 		assertThrows(EPException.class, () -> input.setEventType("NonExisting"));
 	}
 
 	@Test
-	void testSetEventType() {
+	public void testSetEventType() {
 		JSONInputProcessor input = new JSONInputProcessor(engine);
 		// shall not throw exception
 		input.setEventType(DEFAULT_SCHEMA);
@@ -64,12 +59,12 @@ class TestJSONInputProcessor {
 	}
 
 	@Test
-	void testCreateProcessorWithNotExistingEventType() {
+	public void testCreateProcessorWithNotExistingEventType() {
 		assertThrows(EPException.class, () -> new JSONInputProcessor(engine, "NonExisting"));
 	}
 
 	@Test
-	void testCreateProcessorWithExistingEventType() {
+	public void testCreateProcessorWithExistingEventType() {
 
 		JSONInputProcessor input = new JSONInputProcessor(engine, DEFAULT_SCHEMA);
 
@@ -77,7 +72,7 @@ class TestJSONInputProcessor {
 	}
 
 	@Test
-	void testProcessWithMapFailed() {
+	public void testProcessWithMapFailed() {
 		JSONInputProcessor input = new JSONInputProcessor(engine, DEFAULT_SCHEMA);
 
 		Map<String, String> data = new HashMap<String, String>();
@@ -89,7 +84,7 @@ class TestJSONInputProcessor {
 	}
 
 	@Test
-	void testProcessWithMapSuccess() {
+	public void testProcessWithMapSuccess() {
 		JSONInputProcessor input = new JSONInputProcessor(engine, DEFAULT_SCHEMA);
 
 		Map<String, String> data = new HashMap<String, String>();
@@ -101,7 +96,7 @@ class TestJSONInputProcessor {
 	}
 
 	@Test
-	void testProcessWithMapOnStatement() {
+	public void testProcessWithMapOnStatement() {
 		JSONInputProcessor input = new JSONInputProcessor(engine, DEFAULT_SCHEMA);
 
 		Map<String, String> data = new HashMap<String, String>();
@@ -128,7 +123,7 @@ class TestJSONInputProcessor {
 	}
 
 	@Test
-	void testProcessWithTypeConversionError() {
+	public void testProcessWithTypeConversionError() {
 		JSONInputProcessor input = new JSONInputProcessor(engine, DEFAULT_SCHEMA);
 
 		// create statement, add to engine
@@ -145,7 +140,7 @@ class TestJSONInputProcessor {
 	}
 
 	@Test
-	void testProcessWithJSONInput() {
+	public void testProcessWithJSONInput() {
 		JSONInputProcessor input = new JSONInputProcessor(engine, DEFAULT_SCHEMA);
 
 		// create statement, add to engine
@@ -178,7 +173,7 @@ class TestJSONInputProcessor {
 	}
 
 	@Test
-	void testProcessWithMalformedJSONInput() {
+	public void testProcessWithMalformedJSONInput() {
 		JSONInputProcessor input = new JSONInputProcessor(engine, DEFAULT_SCHEMA);
 
 		// create statement, add to engine
@@ -192,7 +187,7 @@ class TestJSONInputProcessor {
 	}
 
 	@Test
-	void testProcessWithAllTypes() {
+	public void testProcessWithAllTypes() {
 		final String SCHEMA = "AllTypes";
 
 		Map<String, String> schema = new HashMap<String, String>();

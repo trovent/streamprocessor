@@ -11,9 +11,12 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
-import org.glassfish.jersey.internal.util.Producer;
-
+import com.espertech.esper.client.EPException;
+import com.espertech.esper.client.EventPropertyDescriptor;
+import com.espertech.esper.client.EventType;
+import com.trovent.streamprocessor.esper.EplSchema;
 import com.trovent.streamprocessor.esper.EplStatement;
 import com.trovent.streamprocessor.esper.TSPEngine;
 
@@ -23,35 +26,90 @@ public class EsperService {
 	static TSPEngine epService = null;
 
 	public EsperService() {
-		if (epService == null)
+		if (epService == null) {
 			epService = TSPEngine.create();
+			epService.init();
+		}
 	}
 
 	@GET
 	@Path("statement/{name}")
-	@Produces(MediaType.TEXT_PLAIN)
-	public EplStatement getEplStatement(@PathParam("name") String name) {
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getEplStatement(@PathParam("name") String name) {
 		EplStatement stmt = new EplStatement();
 		if (epService.hasStatement(name)) {
 			stmt.name = name;
 			stmt.expression = epService.getStatementExpression(name);
-			return stmt;
 		}
-		return stmt;
+
+		return Response.status(200).entity(stmt).build();
 	}
 
 	@POST
 	@Path("statement")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.TEXT_PLAIN)
-	public String addEplStatement(EplStatement stmt) {
-		return epService.addEPLStatement(stmt.name, stmt.expression);
+	public Response addEplStatement(EplStatement stmt) {
+		try {
+			String name = epService.addEPLStatement(stmt.expression, stmt.name);
+			return Response.status(200).entity(name).build();
+		} catch (EPException e) {
+			return Response.status(412).entity(e.toString()).build();
+		}
 	}
 
 	@DELETE
 	@Path("statement/{name}")
-	public void deleteEplStatement(@PathParam("name") String name) {
-		epService.removeEPLStatement(name);
+	public Response deleteEplStatement(@PathParam("name") String name) {
+		try {
+
+			if (epService.hasStatement(name)) {
+				epService.removeEPLStatement(name);
+				return Response.status(200).build();
+			}
+			return Response.status(404).build();
+		} catch (EPException e) {
+			return Response.status(404).entity(e.toString()).build();
+		}
+	}
+
+	@GET
+	@Path("schema/{name}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getEplSchema(@PathParam("name") String name) {
+		EplSchema schema = new EplSchema();
+		if (epService.hasEPLSchema(name)) {
+			schema.name = name;
+			EventType eventType = epService.getEPLSchema(name);
+			for (EventPropertyDescriptor prop : eventType.getPropertyDescriptors()) {
+				schema.fields.put(prop.getPropertyName(), prop.getPropertyType().getName());
+			}
+			return Response.status(200).entity(schema).build();
+		}
+		return Response.status(404).build();
+	}
+
+	@POST
+	@Path("schema")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.TEXT_PLAIN)
+	public String addEplSchema(EplSchema schema) {
+		epService.addEPLSchema(schema.name, schema.fields);
+		return schema.name;
+	}
+
+	@DELETE
+	@Path("schema/{name}")
+	public Response deleteEplSchema(@PathParam("name") String name) {
+		if (epService.hasEPLSchema(name)) {
+			try {
+				epService.removeEPLSchema(name);
+				return Response.status(200).build();
+			} catch (EPException e) {
+				return Response.status(428).entity(e.toString()).build();
+			}
+		}
+		return Response.status(404).build();
 	}
 
 	// { "topic" : "mytopic", "eventname" : "myeventname" }

@@ -1,5 +1,8 @@
 package com.trovent.streamprocessor.restapi;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import javax.ws.rs.Consumes;
@@ -79,6 +82,18 @@ public class EsperService {
 	}
 
 	@GET
+	@Path("statements")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getEplStatements() {
+		Map<String, String> statements = epService.getStatements();
+		List<EplStatement> eplStatements = new ArrayList<EplStatement>();
+		for (Map.Entry<String, String> statement : statements.entrySet()) {
+			eplStatements.add(new EplStatement(statement.getKey(), statement.getValue()));
+		}
+		return Response.status(200).entity(eplStatements).build();
+	}
+
+	@GET
 	@Path("schema/{name}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getEplSchema(@PathParam("name") String name) {
@@ -115,6 +130,22 @@ public class EsperService {
 			}
 		}
 		return Response.status(404).build();
+	}
+
+	@GET
+	@Path("schemas")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getEplSchemas() {
+		EventType[] eventTypes = epService.getEPLSchemas();
+		List<EplSchema> schemas = new ArrayList<EplSchema>();
+		for (EventType eventType : eventTypes) {
+			EplSchema schema = new EplSchema(eventType.getName());
+			for (EventPropertyDescriptor propDescriptor : eventType.getPropertyDescriptors()) {
+				schema.add(propDescriptor.getPropertyName(), propDescriptor.getPropertyType().toString());
+			}
+			schemas.add(schema);
+		}
+		return Response.status(200).entity(schemas).build();
 	}
 
 	// { "topic" : "mytopic", "eventname" : "myeventname" }

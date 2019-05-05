@@ -37,12 +37,17 @@ public class EsperService {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getEplStatement(@PathParam("name") String name) {
 		EplStatement stmt = new EplStatement();
-		if (epService.hasStatement(name)) {
-			stmt.name = name;
-			stmt.expression = epService.getStatementExpression(name);
+		try {
+			if (epService.hasStatement(name)) {
+				stmt.name = name;
+				stmt.expression = epService.getStatementExpression(name);
+				return Response.status(200).entity(stmt).build();
+			} else {
+				return Response.status(404).build();
+			}
+		} catch (EPException e) {
+			return Response.status(412).entity(e.toString()).build();
 		}
-
-		return Response.status(200).entity(stmt).build();
 	}
 
 	@POST

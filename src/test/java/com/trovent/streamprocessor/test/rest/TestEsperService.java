@@ -1,9 +1,12 @@
 package com.trovent.streamprocessor.test.rest;
 
+import java.util.List;
+
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -20,6 +23,8 @@ public class TestEsperService extends TestCase {
 	ApplicationServer server;
 	WebTarget target;
 
+	EplStatement stmtTwo;
+
 	protected void setUp() {
 		server = new ApplicationServer(null);
 		server.start();
@@ -35,6 +40,12 @@ public class TestEsperService extends TestCase {
 		// create schema "two" and add it to engine for testing
 		schema = new EplSchema("two").add("name", "string").add("age", "integer");
 		target.path("api/schema").request().post(Entity.entity(schema, MediaType.APPLICATION_JSON));
+
+		stmtTwo = new EplStatement("stmtTwo", "select * from one");
+		target.path("api/statement").request().post(Entity.entity(stmtTwo, MediaType.APPLICATION_JSON));
+
+		EplStatement stmtThree = new EplStatement("stmtThree", "select name from one");
+		target.path("api/statement").request().post(Entity.entity(stmtThree, MediaType.APPLICATION_JSON));
 	}
 
 	protected void tearDown() {
@@ -85,6 +96,16 @@ public class TestEsperService extends TestCase {
 	}
 
 	@Test
+	public void testGetSchemasSuccess() {
+		Response response = target.path("api/schemas/").request().get();
+		assertEquals(200, response.getStatus());
+
+		List<EplSchema> result = response.readEntity(new GenericType<List<EplSchema>>() {
+		});
+		assertTrue(result.size() > 0);
+	}
+
+	@Test
 	public void testAddStatementFailed() {
 		EplStatement statement = new EplStatement("zeroStmt");
 		statement.expression = "select * from notexisting";
@@ -106,5 +127,44 @@ public class TestEsperService extends TestCase {
 
 		String result = response.readEntity(String.class);
 		assertEquals(statement.name, result);
+	}
+
+	@Test
+	public void testGetStatementFailed() {
+		Response response = target.path("api/statement/notexisting").request().get();
+
+		assertEquals(404, response.getStatus());
+	}
+
+	@Test
+	public void testGetStatementSuccess() {
+		Response response = target.path("api/statement/stmtTwo").request().get();
+		assertEquals(200, response.getStatus());
+
+		EplStatement result = response.readEntity(EplStatement.class);
+		assertEquals(this.stmtTwo.name, result.name);
+		assertEquals(this.stmtTwo.expression, result.expression);
+	}
+
+	@Test
+	public void testGetStatementsSuccess() {
+		Response response = target.path("api/statements/").request().get();
+		assertEquals(200, response.getStatus());
+
+		List<EplStatement> result = response.readEntity(new GenericType<List<EplStatement>>() {
+		});
+		assertTrue(result.size() > 0);
+	}
+
+	@Test
+	public void testDeleteStatementSuccess() {
+		Response response = target.path("api/statement/stmtThree").request().delete();
+		assertEquals(200, response.getStatus());
+	}
+
+	@Test
+	public void testDeleteStatementFailed() {
+		Response response = target.path("api/statement/unknown").request().delete();
+		assertEquals(404, response.getStatus());
 	}
 }

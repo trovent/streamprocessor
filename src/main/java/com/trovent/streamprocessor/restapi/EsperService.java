@@ -38,8 +38,7 @@ public class EsperService {
 		EplStatement stmt = new EplStatement();
 		try {
 			if (epService.hasStatement(name)) {
-				stmt.name = name;
-				stmt.expression = epService.getStatementExpression(name);
+				stmt = epService.getStatement(name);
 				return Response.status(200).entity(stmt).build();
 			} else {
 				return Response.status(404).build();

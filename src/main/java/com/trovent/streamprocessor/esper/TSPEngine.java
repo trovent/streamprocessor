@@ -156,6 +156,12 @@ public class TSPEngine {
 		return statements;
 	}
 
+	public EplStatement getStatement(String statementName) {
+		EplStatement stmnt = new EplStatement(epService.getEPAdministrator().getStatement(statementName));
+		return stmnt;
+
+	}
+
 	/**
 	 * returns the content of a statement.
 	 * 

@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.espertech.esper.client.EventBean;
 import com.espertech.esper.client.UpdateListener;
+import com.trovent.streamprocessor.esper.TSPEngine;
 import com.trovent.streamprocessor.kafka.InputProcessor;
 import com.trovent.streamprocessor.kafka.KafkaManager;
 import com.trovent.streamprocessor.kafka.Producer;
@@ -18,7 +19,7 @@ import com.trovent.streamprocessor.restapi.ApplicationServer;
 public class Application {
 
 	private Logger logger;
-	private TSPEngine engine = new TSPEngine();
+	private TSPEngine engine = TSPEngine.create();
 
 	private KafkaManager kafkaManager;
 

@@ -21,11 +21,10 @@ public class KafkaManager {
 	public KafkaManager() {
 
 		this.init();
-		// this.loader = loader;
-
 	}
 
 	public void init() {
+
 		this.logger = LogManager.getLogger();
 		this.props = new Properties();
 

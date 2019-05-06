@@ -1,8 +1,6 @@
 package com.trovent.streamprocessor.restapi;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 
 import javax.ws.rs.Consumes;
@@ -83,11 +81,7 @@ public class EsperService {
 	@Path("statements")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getEplStatements() {
-		Map<String, String> statements = epService.getStatements();
-		List<EplStatement> eplStatements = new ArrayList<EplStatement>();
-		for (Map.Entry<String, String> statement : statements.entrySet()) {
-			eplStatements.add(new EplStatement(statement.getKey(), statement.getValue()));
-		}
+		List<EplStatement> eplStatements = epService.getStatements();
 		return Response.status(200).entity(eplStatements).build();
 	}
 

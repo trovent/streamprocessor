@@ -1,5 +1,7 @@
 package com.trovent.streamprocessor.esper;
 
+import com.espertech.esper.client.EPStatement;
+
 /**
  * Entity class for epl statement data
  * 
@@ -36,6 +38,11 @@ public class EplStatement {
 	public EplStatement(String name, String expression) {
 		this.name = name;
 		this.expression = expression;
+	}
+
+	public EplStatement(EPStatement statement) {
+		this.name = statement.getName();
+		this.expression = statement.getText();
 	}
 
 }

@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -145,18 +144,15 @@ public class TSPEngine {
 	}
 
 	/**
-	 * returns a Map, with the statement names as key and the expression as content
+	 * Returns a List of EplStatements
 	 * 
 	 * @return
 	 */
-	public Map<String, String> getStatements() {
-		String[] statementNames = getStatementNames();
-		Map<String, String> statements = new LinkedHashMap<String, String>();
-
-		for (String s : statementNames) {
-			statements.put(s, epService.getEPAdministrator().getStatement(s).getText());
+	public List<EplStatement> getStatements() {
+		List<EplStatement> statements = new ArrayList<EplStatement>();
+		for (String sName : epService.getEPAdministrator().getStatementNames()) {
+			statements.add(new EplStatement(epService.getEPAdministrator().getStatement(sName)));
 		}
-
 		return statements;
 	}
 

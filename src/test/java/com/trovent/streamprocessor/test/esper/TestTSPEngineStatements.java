@@ -2,7 +2,7 @@ package com.trovent.streamprocessor.test.esper;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.util.Map;
+import java.util.List;
 
 //import org.junit.jupiter.api.Test;
 
@@ -11,6 +11,7 @@ import org.junit.Test;
 import com.espertech.esper.client.EPException;
 import com.espertech.esper.client.EventBean;
 import com.espertech.esper.client.UpdateListener;
+import com.trovent.streamprocessor.esper.EplStatement;
 import com.trovent.streamprocessor.esper.TSPEngine;
 
 import junit.framework.TestCase;
@@ -157,11 +158,11 @@ public class TestTSPEngineStatements extends TestCase {
 
 	@Test
 	public void testGetStatements() {
-		Map<String, String> map = engine.getStatements();
+		List<EplStatement> statements = engine.getStatements();
 
-		assertEquals(map.get("MapSchema"),
+		assertEquals(statements.get(1).expression,
 				"create map schema SomeMapEventSchema as (first_name string, numbers integer)");
-		assertEquals(map.get("MapStatement"), "select count(first_name) as cntFirst_Name from SomeMapEventSchema");
+		assertEquals(statements.get(0).expression, "select count(first_name) as cntFirst_Name from SomeMapEventSchema");
 	}
 
 	@Test

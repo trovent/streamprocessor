@@ -101,7 +101,7 @@ public class EsperService {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.TEXT_PLAIN)
 	public String addEplSchema(EplSchema schema) {
-		epService.addEPLSchema(schema.name, schema.fields);
+		epService.addEPLSchema(schema);
 		return schema.name;
 	}
 

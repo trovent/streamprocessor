@@ -235,6 +235,14 @@ public class TSPEngine {
 		this.epService.getEPAdministrator().getConfiguration().addEventType(name, ev);
 	}
 
+	/**
+	 * Adds a new Schema using two Arrays to identify properties
+	 * 
+	 * @param name
+	 * @param propNames
+	 * @param propTypeNames
+	 * @throws EPException
+	 */
 	public void addEPLSchema(String name, String[] propNames, String[] propTypeNames) throws EPException {
 		/*
 		 * propNames: [ "name", "age ] propTypeNames : [ "string", "integer" ]
@@ -255,6 +263,15 @@ public class TSPEngine {
 		}
 
 		this.epService.getEPAdministrator().getConfiguration().addEventType(name, propNames, propTypes);
+	}
+
+	/**
+	 * Adds a new Schema using a EplSchema object
+	 * 
+	 * @param schema
+	 */
+	public void addEPLSchema(EplSchema schema) {
+		this.addEPLSchema(schema.name, schema.fields);
 	}
 
 	/**

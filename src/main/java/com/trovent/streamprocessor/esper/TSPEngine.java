@@ -2,8 +2,10 @@ package com.trovent.streamprocessor.esper;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.espertech.esper.client.ConfigurationException;
@@ -299,12 +301,19 @@ public class TSPEngine {
 	}
 
 	/**
-	 * Returns all the currently registered EventTypes
+	 * Returns a List of all currently available EventTypes/Schemas
 	 * 
 	 * @return
 	 */
-	public EventType[] getEPLSchemas() {
-		return epService.getEPAdministrator().getConfiguration().getEventTypes();
+	public List<EplSchema> getEPLSchemas() {
+		EventType[] all = epService.getEPAdministrator().getConfiguration().getEventTypes();
+		List<EplSchema> schemas = new ArrayList<EplSchema>();
+
+		for (EventType e : all) {
+			schemas.add(new EplSchema(e));
+		}
+
+		return schemas;
 	}
 
 	/**

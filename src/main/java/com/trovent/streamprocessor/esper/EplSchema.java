@@ -1,23 +1,18 @@
 package com.trovent.streamprocessor.esper;
 
-/**
- * Entity class for epl schema data
- * 
- * @author tobias nieberg
- *
- */
-import java.util.HashMap;
-import java.util.Map;
+import java.util.LinkedHashMap;
+
+import com.espertech.esper.client.EventType;
 
 public class EplSchema {
 	public String name;
-	public Map<String, String> fields;
+	public LinkedHashMap<String, String> fields;
 
 	/**
 	 * Default constructor creating empty object
 	 */
 	public EplSchema() {
-		fields = new HashMap<String, String>();
+		fields = new LinkedHashMap<String, String>();
 	}
 
 	/**
@@ -27,7 +22,15 @@ public class EplSchema {
 	 */
 	public EplSchema(String name) {
 		this.name = name;
-		fields = new HashMap<String, String>();
+		fields = new LinkedHashMap<String, String>();
+	}
+
+	public EplSchema(EventType eventType) {
+		this.name = eventType.getName();
+		fields = new LinkedHashMap<String, String>();
+		for (String propName : eventType.getPropertyNames()) {
+			fields.put(propName, eventType.getPropertyDescriptor(propName).getPropertyType().getSimpleName());
+		}
 	}
 
 	/**

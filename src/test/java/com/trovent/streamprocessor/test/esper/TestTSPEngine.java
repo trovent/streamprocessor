@@ -3,6 +3,7 @@ package com.trovent.streamprocessor.test.esper;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
@@ -11,6 +12,7 @@ import com.espertech.esper.client.ConfigurationException;
 import com.espertech.esper.client.EPException;
 import com.espertech.esper.client.EPStatementException;
 import com.espertech.esper.client.EventType;
+import com.trovent.streamprocessor.esper.EplSchema;
 import com.trovent.streamprocessor.esper.TSPEngine;
 
 import junit.framework.TestCase;
@@ -284,6 +286,22 @@ public class TestTSPEngine extends TestCase {
 	@Test
 	public void testGetEPLSchemaForNonexistantEventType() {
 		assertThrows(EPException.class, () -> engine.getEPLSchema("Bielefeld"));
+	}
+
+	@Test
+	public void testGetEPLSchemas() {
+		final String SCHEMANAME = "createmyschema";
+
+		Map<String, String> newEventType = new HashMap<String, String>();
+
+		newEventType.put("myString", "string");
+		newEventType.put("myinteger", "integer");
+		newEventType.put("myinteger2", "int");
+
+		engine.addEPLSchema(SCHEMANAME, newEventType);
+		List<EplSchema> schemalist = engine.getEPLSchemas();
+
+		assertEquals(SCHEMANAME, schemalist.get(0).name);
 	}
 
 }

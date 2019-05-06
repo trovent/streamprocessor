@@ -136,16 +136,8 @@ public class EsperService {
 	@Path("schemas")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getEplSchemas() {
-		EventType[] eventTypes = epService.getEPLSchemas();
-		List<EplSchema> schemas = new ArrayList<EplSchema>();
-		for (EventType eventType : eventTypes) {
-			EplSchema schema = new EplSchema(eventType.getName());
-			for (EventPropertyDescriptor propDescriptor : eventType.getPropertyDescriptors()) {
-				schema.add(propDescriptor.getPropertyName(), propDescriptor.getPropertyType().toString());
-			}
-			schemas.add(schema);
-		}
-		return Response.status(200).entity(schemas).build();
+		List<EplSchema> eventTypes = epService.getEPLSchemas();
+		return Response.status(200).entity(eventTypes).build();
 	}
 
 	// { "topic" : "mytopic", "eventname" : "myeventname" }

@@ -43,7 +43,7 @@ public class KafkaService {
 	@Path("consumer")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.TEXT_PLAIN)
-	public Response addConsumer(Connector connector) {
+	public Response addConsumer(ConsumerConnector connector) {
 
 		return Response.status(404).build();
 	}
@@ -54,7 +54,7 @@ public class KafkaService {
 	@Path("producer")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.TEXT_PLAIN)
-	public Response addProducer(Connector connector) {
+	public Response addProducer(ProducerConnector connector) {
 
 		return Response.status(404).build();
 	}

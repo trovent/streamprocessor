@@ -80,7 +80,7 @@ public class TSPEngine {
 	 * @param statementName a (preferably) unique Name which will later be used to
 	 *                      identify the Statement
 	 * @return The actual given name of the new Statement. This can diverge from the
-	 *         input, as in case of a Statement with this name already existing a
+	 *         input, as in case of a Statement with an already existing name a
 	 *         suffix is appended to preserve uniqueness
 	 * @throws EPException when the expression was not valid
 	 */
@@ -90,6 +90,21 @@ public class TSPEngine {
 		eplStatement = epService.getEPAdministrator().createEPL(statement, statementName);
 
 		return eplStatement.getName();
+	}
+
+	/**
+	 * Creates a new EsperStatement and an identifying name
+	 * 
+	 * @param statement a EplStatement object which will be used to select certain
+	 *                  types of event
+	 * @return The actual given name of the new Statement. This can diverge from the
+	 *         input, as in case of a Statement with an already existing name a
+	 *         suffix is appended to preserve uniqueness
+	 * @throws EPException when the expression was not valid
+	 */
+	public String addEPLStatement(EplStatement statement) throws EPException {
+
+		return this.addEPLStatement(statement.expression, statement.name);
 	}
 
 	/**

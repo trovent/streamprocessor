@@ -271,7 +271,7 @@ public class TestTSPEngine extends TestCase {
 	public void testGetEPLSchema() {
 		this.testAddEPLSchemaAllowedEntries();
 		String eventTypeName = "TestEventSchema"; // from a
-		assertEquals(eventTypeName, (engine.getEPLSchema(eventTypeName).getName()));
+		assertEquals(eventTypeName, (engine.getEPLSchema(eventTypeName).name));
 
 		String statement;
 		String statementName = "StatementMadeSchema";
@@ -280,7 +280,7 @@ public class TestTSPEngine extends TestCase {
 		statement = "create objectarray schema " + eventTypeName + " as (first_name string, numbers integer)";
 		engine.addEPLStatement(statement, statementName);
 
-		assertEquals(eventTypeName, (engine.getEPLSchema(eventTypeName).getName()));
+		assertEquals(eventTypeName, (engine.getEPLSchema(eventTypeName).name));
 	}
 
 	@Test

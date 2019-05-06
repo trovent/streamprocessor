@@ -290,14 +290,22 @@ public class TSPEngine {
 	 * @param eventTypeName
 	 * @return
 	 */
-	public EventType getEPLSchema(String eventTypeName) {
+	public EplSchema getEPLSchema(String eventTypeName) {
+		EventType lookupType = epService.getEPAdministrator().getConfiguration().getEventType(eventTypeName);
+		if (lookupType != null) {
+			return new EplSchema(lookupType);
+		} else {
+			throw new EPException(String.format("EventType with the Name '%s' does not exist", eventTypeName));
+		}
+	}
+
+	public EventType getEventType(String eventTypeName) {
 		EventType lookupType = epService.getEPAdministrator().getConfiguration().getEventType(eventTypeName);
 		if (lookupType != null) {
 			return lookupType;
 		} else {
 			throw new EPException(String.format("EventType with the Name '%s' does not exist", eventTypeName));
 		}
-
 	}
 
 	/**

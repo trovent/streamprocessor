@@ -17,8 +17,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.espertech.esper.client.EPException;
-import com.espertech.esper.client.EventPropertyDescriptor;
-import com.espertech.esper.client.EventType;
 import com.trovent.streamprocessor.esper.EplSchema;
 import com.trovent.streamprocessor.esper.EplStatement;
 import com.trovent.streamprocessor.esper.TSPEngine;
@@ -97,13 +95,9 @@ public class EsperService {
 	@Path("schema/{name}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getEplSchema(@PathParam("name") String name) {
-		EplSchema schema = new EplSchema();
+		EplSchema schema;
 		if (epService.hasEPLSchema(name)) {
-			schema.name = name;
-			EventType eventType = epService.getEPLSchema(name);
-			for (EventPropertyDescriptor prop : eventType.getPropertyDescriptors()) {
-				schema.fields.put(prop.getPropertyName(), prop.getPropertyType().getName());
-			}
+			schema = epService.getEPLSchema(name);
 			return Response.status(200).entity(schema).build();
 		}
 		return Response.status(404).build();

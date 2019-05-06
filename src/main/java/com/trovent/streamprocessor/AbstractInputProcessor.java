@@ -69,7 +69,7 @@ abstract public class AbstractInputProcessor implements InputProcessor {
 	 *                      this format.
 	 */
 	public void setEventType(String eventTypeName) throws EPException {
-		this.eventType = this.engine.getEPLSchema(eventTypeName);
+		this.eventType = this.engine.getEventType(eventTypeName);
 
 		if (this.eventType == null) {
 			throw new EPException(String.format("EventType '%s' not found", eventTypeName));

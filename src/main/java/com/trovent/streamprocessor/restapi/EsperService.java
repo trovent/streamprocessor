@@ -13,6 +13,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.espertech.esper.client.EPException;
+import com.trovent.streamprocessor.esper.EplEvent;
 import com.trovent.streamprocessor.esper.EplSchema;
 import com.trovent.streamprocessor.esper.EplStatement;
 import com.trovent.streamprocessor.esper.TSPEngine;
@@ -27,6 +28,10 @@ public class EsperService {
 			epService = TSPEngine.create();
 			epService.init();
 		}
+	}
+
+	static public TSPEngine getEngine() {
+		return epService;
 	}
 
 	@GET
@@ -128,8 +133,9 @@ public class EsperService {
 	@POST
 	@Path("sendEvent")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public void sendEvent(GenericEventType event) {
-		// event.data["fieldname"] = "value"
+	public Response sendEvent(EplEvent event) {
+		epService.sendEPLEvent(event.eventTypeName, event.data);
+		return Response.status(200).build();
 	}
 
 }

@@ -1,5 +1,6 @@
 package com.trovent.streamprocessor.test.rest;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import javax.ws.rs.client.Client;
@@ -12,9 +13,13 @@ import javax.ws.rs.core.Response;
 
 import org.junit.Test;
 
+import com.espertech.esper.client.EventBean;
+import com.espertech.esper.client.UpdateListener;
+import com.trovent.streamprocessor.esper.EplEvent;
 import com.trovent.streamprocessor.esper.EplSchema;
 import com.trovent.streamprocessor.esper.EplStatement;
 import com.trovent.streamprocessor.restapi.ApplicationServer;
+import com.trovent.streamprocessor.restapi.EsperService;
 
 import junit.framework.TestCase;
 
@@ -166,5 +171,50 @@ public class TestEsperService extends TestCase {
 	public void testDeleteStatementFailed() {
 		Response response = target.path("api/statement/unknown").request().delete();
 		assertEquals(404, response.getStatus());
+	}
+
+	@Test
+	public void testSendEvent() {
+		String STATEMENTNAME = "counter";
+		EplStatement countingStatement = new EplStatement(STATEMENTNAME,
+				"select count(name) as Number_of_Names from one");
+		Response response = target.path("api/statement").request()
+				.post(Entity.entity(countingStatement, MediaType.APPLICATION_JSON));
+		assertEquals(200, response.getStatus());
+
+		LinkedHashMap<String, Object> myMap = new LinkedHashMap<>();
+		myMap.put("name", "Leo");
+		myMap.put("age", 23);
+		myMap.put("isAdult", false);
+
+		EplEvent myEvent = new EplEvent();
+		myEvent.eventTypeName = "one";
+		myEvent.data = myMap;
+
+		class ConsoleListener implements UpdateListener {
+
+			public int count = 0;
+
+			@Override
+			public void update(EventBean[] newEvents, EventBean[] oldEvents) {
+				long namen = (long) newEvents[0].get("Number_of_Names");
+				System.out.println(String.format("NumberOfNames: %d", namen));
+				count++;
+			}
+		}
+
+		ConsoleListener myListener = new ConsoleListener();
+		EsperService.getEngine().addListener(STATEMENTNAME, myListener);
+
+		// this works
+		// EsperService.getEngine().sendEPLEvent(myEvent.eventTypeName, myEvent.data);
+
+		response = target.path("api/sendEvent").request().post(Entity.entity(myEvent, MediaType.APPLICATION_JSON));
+
+		assertEquals(200, response.getStatus());
+
+		while (myListener.count == 00)
+			;
+
 	}
 }

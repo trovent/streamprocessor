@@ -11,7 +11,9 @@ import org.junit.Test;
 import com.espertech.esper.client.ConfigurationException;
 import com.espertech.esper.client.EPException;
 import com.espertech.esper.client.EPStatementException;
+import com.espertech.esper.client.EventBean;
 import com.espertech.esper.client.EventType;
+import com.espertech.esper.client.UpdateListener;
 import com.trovent.streamprocessor.esper.EplSchema;
 import com.trovent.streamprocessor.esper.TSPEngine;
 
@@ -78,6 +80,34 @@ public class TestTSPEngine extends TestCase {
 		assertEquals(STATEMENTNAME, result);
 	}
 
+	/**
+	 * This class is for testing purposes only
+	 * 
+	 * @author Lukas Steinbrink
+	 *
+	 */
+	class ConsoleListener implements UpdateListener {
+
+		public int count = 0;
+		private String toGet;
+
+		public ConsoleListener(String toGet) {
+			this.toGet = toGet;
+		}
+
+		@Override
+		public void update(EventBean[] newEvents, EventBean[] oldEvents) {
+			long namen = (long) newEvents[0].get(toGet);
+			System.out.println(String.format(toGet + "%d", namen));
+			count++;
+		}
+	}
+
+	@Test
+	public void testAddListener() {
+
+	}
+
 	@Test
 	public void testSendEPLEventMAP() {
 		String statement;
@@ -109,6 +139,58 @@ public class TestTSPEngine extends TestCase {
 		objArrayData[1] = new Integer(42);
 
 		engine.sendEPLEvent("SomeArrayEventSchema", objArrayData);
+	}
+
+	@Test
+	public void testSendEPLEventOBJECTARRAYWithWrongData() {
+		String statement;
+		statement = "create objectarray schema SomeArrayEventSchema as (first_name string, numbers int)";
+		engine.addEPLStatement(statement, "ArraySchema");
+
+		statement = "select numbers as numbers from SomeArrayEventSchema";
+		engine.addEPLStatement(statement, "ArrayStatement");
+
+		// testData as objectarray
+		Object[] objArrayData = new Object[4];
+		objArrayData[0] = new String("Alice");
+		objArrayData[1] = new String("fourty-two");
+		objArrayData[2] = new Long(33);
+		objArrayData[3] = true;
+
+		assertThrows(EPException.class, () -> engine.sendEPLEvent("SomeArrayEventSchema", objArrayData));
+	}
+
+	@Test
+	public void testSendEPLEventMAPWithWrongDataName() {
+		String statement;
+		statement = "create map schema SomeMapEventSchema as (first_name string, numbers integer)";
+		engine.addEPLStatement(statement, "MapSchema");
+
+		statement = "select first_name as First_Name from SomeMapEventSchema";
+		engine.addEPLStatement(statement, "MapStatement");
+
+		Map<String, Object> mapData = new HashMap<String, Object>();
+		mapData.put("Bielefeld", 42);
+		mapData.put("first_name", "Alice");
+
+		assertThrows(EPException.class, () -> engine.sendEPLEvent("SomeMapEventSchema", mapData));
+	}
+
+	@Test
+	public void testSendEPLEventOBJECTARRAYToWrongEvent() {
+		String statement;
+		statement = "create objectarray schema SomeArrayEventSchema as (first_name string, numbers int)";
+		engine.addEPLStatement(statement, "ArraySchema");
+
+		statement = "select numbers as numbers from SomeArrayEventSchema";
+		engine.addEPLStatement(statement, "ArrayStatement");
+
+		// testData as objectarray
+		Object[] objArrayData = new Object[2];
+		objArrayData[0] = new String("Alice");
+		objArrayData[1] = new Integer(42);
+
+		assertThrows(EPException.class, () -> engine.sendEPLEvent("Bielefeld", objArrayData));
 	}
 
 	@Test

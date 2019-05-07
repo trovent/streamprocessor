@@ -365,7 +365,7 @@ public class TSPEngine {
 	 * @param eventTypeName
 	 * @param data          the content of your event as an Array of Objects
 	 */
-	public void sendEPLEvent(String eventTypeName, Object[] data) {
+	public void sendEPLEvent(String eventTypeName, Object[] data) throws EPException {
 		// Event: { dataA; dataB; dataC; ... }
 		// EventType eventType = this.eventTypes.get(eventTypeName);
 
@@ -379,7 +379,7 @@ public class TSPEngine {
 	 * @param eventTypeName
 	 * @param data          the content of your event as a Map
 	 */
-	public void sendEPLEvent(String eventTypeName, Map<?, ?> data) {
+	public void sendEPLEvent(String eventTypeName, Map<String, Object> data) {
 		// Event: { dataA; dataB; dataC; ... }
 		// EventType eventType = this.eventTypes.get(eventTypeName);
 

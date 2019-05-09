@@ -222,6 +222,20 @@ public class TSPEngine {
 	}
 
 	/**
+	 * Removes the given UpdateListener from a statement defined by name
+	 * 
+	 * @param statementName name of the statement the listener will attach to
+	 * @param listener      the Listener that will be removed
+	 */
+	public void removeListener(String statementName, UpdateListener listener) {
+		if (epService.getEPAdministrator().getStatement(statementName) != null) {
+			epService.getEPAdministrator().getStatement(statementName).removeListener(listener);
+		} else {
+			throw new EPException(String.format("there is no statement with the name '%s'", statementName));
+		}
+	}
+
+	/**
 	 * TODO improve explanation for map
 	 * 
 	 * @param name

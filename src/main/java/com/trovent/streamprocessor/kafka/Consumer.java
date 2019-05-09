@@ -38,8 +38,8 @@ public class Consumer implements Runnable {
 		this.isStopped = false;
 	}
 
-	public void start() {
-
+	public void stop() {
+		this.isStopped = true;
 	}
 
 	@Override

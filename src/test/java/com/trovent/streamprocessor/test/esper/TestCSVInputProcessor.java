@@ -1,22 +1,26 @@
 package com.trovent.streamprocessor.test.esper;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.espertech.esper.client.EPException;
 import com.trovent.streamprocessor.CSVInputProcessor;
 import com.trovent.streamprocessor.JSONInputProcessor;
 import com.trovent.streamprocessor.esper.TSPEngine;
 
-import junit.framework.TestCase;
-
-public class TestCSVInputProcessor extends TestCase {
+public class TestCSVInputProcessor {
 
 	private TSPEngine engine;
 
 	final String DEFAULT_SCHEMA = "myschema";
 
+	@BeforeEach
 	protected void setUp() throws Exception {
 		engine = TSPEngine.create();
 		engine.init();
@@ -46,6 +50,7 @@ public class TestCSVInputProcessor extends TestCase {
 		engine.addEPLSchema(DEFAULT_SCHEMA, propNames, typeNames);
 	}
 
+	@AfterEach
 	protected void tearDown() throws Exception {
 		engine.shutdown();
 	}

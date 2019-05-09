@@ -1,12 +1,15 @@
 package com.trovent.streamprocessor.test.esper;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
-//import org.junit.jupiter.api.Test;
-
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.espertech.esper.client.EPException;
 import com.espertech.esper.client.EventBean;
@@ -14,18 +17,12 @@ import com.espertech.esper.client.UpdateListener;
 import com.trovent.streamprocessor.esper.EplStatement;
 import com.trovent.streamprocessor.esper.TSPEngine;
 
-import junit.framework.TestCase;
-
-public class TestTSPEngineStatements extends TestCase {
+public class TestTSPEngineStatements {
 
 	private TSPEngine engine;
 
-	public TestTSPEngineStatements() {
-		super();
-	}
-
+	@BeforeEach
 	protected void setUp() throws Exception {
-		super.setUp();
 
 		engine = TSPEngine.create();
 		engine.init();
@@ -39,10 +36,10 @@ public class TestTSPEngineStatements extends TestCase {
 		engine.addEPLStatement(statement, "MapStatement");
 	}
 
+	@AfterEach
 	protected void tearDown() throws Exception {
 
 		engine.shutdown();
-		super.tearDown();
 	}
 
 	public void testStartEPLStatement() {

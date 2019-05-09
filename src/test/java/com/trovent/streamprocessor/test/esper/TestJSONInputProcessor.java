@@ -1,11 +1,16 @@
 package com.trovent.streamprocessor.test.esper;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.espertech.esper.client.EPException;
 import com.espertech.esper.client.EPStatement;
@@ -14,14 +19,13 @@ import com.espertech.esper.client.UpdateListener;
 import com.trovent.streamprocessor.JSONInputProcessor;
 import com.trovent.streamprocessor.esper.TSPEngine;
 
-import junit.framework.TestCase;
-
-public class TestJSONInputProcessor extends TestCase {
+public class TestJSONInputProcessor {
 
 	private TSPEngine engine;
 
 	final String DEFAULT_SCHEMA = "myschema";
 
+	@BeforeEach
 	protected void setUp() throws Exception {
 		engine = TSPEngine.create();
 		engine.init();
@@ -33,6 +37,7 @@ public class TestJSONInputProcessor extends TestCase {
 		engine.addEPLSchema(DEFAULT_SCHEMA, schema);
 	}
 
+	@AfterEach
 	protected void tearDown() throws Exception {
 		engine.shutdown();
 	}

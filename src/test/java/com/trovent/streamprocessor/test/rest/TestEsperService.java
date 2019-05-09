@@ -1,5 +1,9 @@
 package com.trovent.streamprocessor.test.rest;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -11,7 +15,9 @@ import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.espertech.esper.client.EventBean;
 import com.espertech.esper.client.UpdateListener;
@@ -21,15 +27,14 @@ import com.trovent.streamprocessor.esper.EplStatement;
 import com.trovent.streamprocessor.restapi.ApplicationServer;
 import com.trovent.streamprocessor.restapi.EsperService;
 
-import junit.framework.TestCase;
-
-public class TestEsperService extends TestCase {
+public class TestEsperService {
 
 	ApplicationServer server;
 	WebTarget target;
 
 	EplStatement stmtTwo;
 
+	@BeforeEach
 	protected void setUp() {
 		server = new ApplicationServer(null);
 		server.start();
@@ -53,6 +58,7 @@ public class TestEsperService extends TestCase {
 		target.path("api/statement").request().post(Entity.entity(stmtThree, MediaType.APPLICATION_JSON));
 	}
 
+	@AfterEach
 	protected void tearDown() {
 		server.stop();
 	}
@@ -91,7 +97,7 @@ public class TestEsperService extends TestCase {
 	@Test
 	public void testDeleteSchemaSuccess() {
 		Response response = target.path("api/schema/two").request().delete();
-		assertEquals(response.readEntity(String.class), 200, response.getStatus());
+		assertEquals(200, response.getStatus(), response.readEntity(String.class));
 	}
 
 	@Test
@@ -209,7 +215,7 @@ public class TestEsperService extends TestCase {
 		// this works
 		// EsperService.getEngine().sendEPLEvent(myEvent.eventTypeName, myEvent.data);
 
-		response = target.path("api/sendEvent").request().post(Entity.entity(myEvent, MediaType.APPLICATION_JSON));
+		response = target.path("api/sendEvent/map").request().post(Entity.entity(myEvent, MediaType.APPLICATION_JSON));
 
 		assertEquals(200, response.getStatus());
 

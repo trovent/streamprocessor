@@ -42,11 +42,13 @@ public class TestTSPEngineStatements {
 		engine.shutdown();
 	}
 
+	@Test
 	public void testStartEPLStatement() {
 		engine.startEPLStatement("MapStatement");
 		assertTrue(engine.getEPServiceProvider().getEPAdministrator().getStatement("MapStatement").isStarted());
 	}
 
+	@Test
 	public void testStartEPLStatementSCHEMA() {
 		engine.stopEPLStatement("MapSchema");
 		assertFalse(engine.getEPServiceProvider().getEPAdministrator().getStatement("MapSchema").isStarted());
@@ -55,27 +57,31 @@ public class TestTSPEngineStatements {
 		assertTrue(engine.getEPServiceProvider().getEPAdministrator().getStatement("MapSchema").isStarted());
 	}
 
+	@Test
 	public void testStartEPLStatementForNonexistantStatement() {
 		assertThrows(EPException.class, () -> engine.startEPLStatement("Bielefeld"));
 	}
 
+	@Test
 	public void testStopEPLStatement() {
 		assertTrue(engine.getEPServiceProvider().getEPAdministrator().getStatement("MapStatement").isStarted());
 		engine.stopEPLStatement("MapStatement");
 		assertTrue(engine.getEPServiceProvider().getEPAdministrator().getStatement("MapStatement").isStopped());
 	}
 
+	@Test
 	public void testStopEPLStatementSCHEMA() {
 		assertTrue(engine.getEPServiceProvider().getEPAdministrator().getStatement("MapSchema").isStarted());
 		engine.stopEPLStatement("MapSchema");
 		assertTrue(engine.getEPServiceProvider().getEPAdministrator().getStatement("MapSchema").isStopped());
 	}
 
+	@Test
 	public void testStopEPLStatementForNonexistantStatement() {
 		assertThrows(EPException.class, () -> engine.stopEPLStatement("Bielefeld"));
 	}
 
-	// TODO
+	@Test // TODO
 	public void testRemoveEPLStatement() {
 		engine.removeEPLStatement("MapStatement");
 	}

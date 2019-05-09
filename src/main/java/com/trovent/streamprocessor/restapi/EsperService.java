@@ -131,7 +131,7 @@ public class EsperService {
 	}
 
 	@POST
-	@Path("sendEvent")
+	@Path("sendEvent/map")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response sendEvent(EplEvent event) {
 		epService.sendEPLEvent(event.eventTypeName, event.data);

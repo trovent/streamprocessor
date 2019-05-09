@@ -97,8 +97,8 @@ public class TestTSPEngine extends TestCase {
 
 		@Override
 		public void update(EventBean[] newEvents, EventBean[] oldEvents) {
-			long namen = (long) newEvents[0].get(toGet);
-			System.out.println(String.format(toGet + "%d", namen));
+			Object o = newEvents[0].get(toGet);
+			System.out.println(String.format(toGet + o.toString()));
 			count++;
 		}
 	}

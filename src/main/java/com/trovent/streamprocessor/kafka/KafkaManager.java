@@ -60,18 +60,29 @@ public class KafkaManager {
 	 * start a new thread that reads from the given topic and puts data into the
 	 * given InputProcessor.
 	 */
-	public Consumer createConsumer(String topic, InputProcessor input) {
+	public ConsumerThread createConsumerThread(String topic, InputProcessor input) {
 
 		logger.trace(String.format("creating new consumer for topic '%s'", topic));
 
-		Consumer consumer = new Consumer(props, topic, input);
+		ConsumerThread consumerThread = new ConsumerThread(props, topic, input);
 
-		executor.execute(consumer);
+		executor.execute(consumerThread);
 
-		return consumer;
+		return consumerThread;
 	}
 
-	public Producer createProducer(String topic) {
-		return new Producer(this.props, topic);
+	public ConsumerThread createConsumerThread(IConsumer consumer, InputProcessor input) {
+
+		logger.trace(String.format("creating new consumer"));
+
+		ConsumerThread consumerThread = new ConsumerThread(consumer, input);
+
+		executor.execute(consumerThread);
+
+		return consumerThread;
+	}
+
+	public TSPKafkaProducer createProducer(String topic) {
+		return new TSPKafkaProducer(this.props, topic);
 	}
 }

@@ -402,6 +402,17 @@ public class TSPEngine {
 	}
 
 	/**
+	 * standard call to send a given event This function sends a Map-type event
+	 * 
+	 * @param event The EplEvent to be send to the Runtime Engine <br>
+	 *              The event EplEvent class contains both the event name as well as
+	 *              the data
+	 */
+	public void sendEPLEvent(EplEvent event) {
+		epService.getEPRuntime().sendEvent(event.data, event.eventTypeName);
+	}
+
+	/**
 	 * @return the EPServiceProvider
 	 */
 	public EPServiceProvider getEPServiceProvider() {

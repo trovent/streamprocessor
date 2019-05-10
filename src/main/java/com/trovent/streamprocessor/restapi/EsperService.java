@@ -134,7 +134,7 @@ public class EsperService {
 	@Path("sendEvent/map")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response sendEvent(EplEvent event) {
-		epService.sendEPLEvent(event.eventTypeName, event.data);
+		epService.sendEPLEvent(event);
 		return Response.status(200).build();
 	}
 

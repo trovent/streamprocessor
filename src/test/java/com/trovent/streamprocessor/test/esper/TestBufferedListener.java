@@ -51,9 +51,9 @@ class TestBufferedListener {
 	@Test
 	void testPoll() {
 		assertNull(listener.poll());
-		engine.sendEPLEvent(eventAlice.eventTypeName, eventAlice.data);
-		engine.sendEPLEvent(eventBob.eventTypeName, eventBob.data);
-		engine.sendEPLEvent(eventEve.eventTypeName, eventEve.data);
+		engine.sendEPLEvent(eventAlice);
+		engine.sendEPLEvent(eventBob);
+		engine.sendEPLEvent(eventEve);
 
 		EplEvent event = listener.poll();
 		assertEquals(eventAlice.data.get("name"), event.data.get("name"));
@@ -64,7 +64,7 @@ class TestBufferedListener {
 	@Test
 	void testPeek() {
 		assertNull(listener.peek());
-		engine.sendEPLEvent(eventAlice.eventTypeName, eventAlice.data);
+		engine.sendEPLEvent(eventAlice);
 
 		assertEquals(1, listener.size());
 		assertEquals(eventAlice.data.get("name"), listener.peek().data.get("name"));
@@ -77,13 +77,13 @@ class TestBufferedListener {
 	void testSize() {
 		assertEquals(0, listener.size());
 
-		engine.sendEPLEvent(eventAlice.eventTypeName, eventAlice.data);
+		engine.sendEPLEvent(eventAlice);
 		assertEquals(1, listener.size());
 
-		engine.sendEPLEvent(eventBob.eventTypeName, eventBob.data);
+		engine.sendEPLEvent(eventBob);
 		assertEquals(1, listener.size());
 
-		engine.sendEPLEvent(eventEve.eventTypeName, eventEve.data);
+		engine.sendEPLEvent(eventEve);
 		assertEquals(2, listener.size());
 
 		listener.poll();
@@ -97,13 +97,13 @@ class TestBufferedListener {
 	void testIsEmpty() {
 		assertTrue(listener.isEmpty());
 
-		engine.sendEPLEvent(eventAlice.eventTypeName, eventAlice.data);
+		engine.sendEPLEvent(eventAlice);
 		assertFalse(listener.isEmpty());
 
 		listener.poll();
 		assertTrue(listener.isEmpty());
 
-		engine.sendEPLEvent(eventBob.eventTypeName, eventBob.data);
+		engine.sendEPLEvent(eventBob);
 		assertTrue(listener.isEmpty());
 	}
 

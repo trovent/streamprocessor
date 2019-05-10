@@ -6,16 +6,16 @@ import org.apache.logging.log4j.Logger;
 import com.espertech.esper.client.EventBean;
 import com.espertech.esper.client.UpdateListener;
 
-public class KafkaProducerListener implements UpdateListener {
+public class ProducerListener implements UpdateListener {
 
-	private Producer kafkaProducer;
+	private IProducer producer;
 
 	private Logger logger;
 
 	private String statementName;
 
-	KafkaProducerListener(Producer producer, String statementName) {
-		this.kafkaProducer = producer;
+	ProducerListener(IProducer producer, String statementName) {
+		this.producer = producer;
 		this.logger = LogManager.getLogger();
 		this.setStatementName(statementName);
 	}
@@ -27,7 +27,7 @@ public class KafkaProducerListener implements UpdateListener {
 			logger.info("{} {} {}  count:{}", eb.get("syslog_timestamp"), eb.get("syslog_app"),
 					eb.get("syslog_message"), eb.get("count(*)"));
 
-			this.kafkaProducer.send(String.format("%s %s %s %d", eb.get("syslog_timestamp"), eb.get("syslog_app"),
+			this.producer.send(String.format("%s %s %s %d", eb.get("syslog_timestamp"), eb.get("syslog_app"),
 					eb.get("syslog_message"), eb.get("count(*)")));
 		}
 

@@ -7,14 +7,14 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class Producer {
+public class TSPKafkaProducer implements IProducer {
 	private Logger logger;
 
 	private String topic;
 
 	private KafkaProducer<String, String> producer;
 
-	public Producer(Properties props, String topic) {
+	public TSPKafkaProducer(Properties props, String topic) {
 		this.topic = topic;
 		this.logger = LogManager.getLogger();
 

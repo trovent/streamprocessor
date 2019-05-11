@@ -26,6 +26,10 @@ public class ConsumerThread implements Runnable {
 		init(consumer, input);
 	}
 
+	public IConsumer getConsumer() {
+		return this.consumer;
+	}
+
 	private void init(IConsumer consumer, InputProcessor input) {
 
 		this.input = input;

@@ -13,28 +13,57 @@ public class ConnectorController {
 	private TSPEngine engine;
 	private KafkaManager kafkaManager;
 
-	Set<Consumer> consumers;
-	Set<KafkaProducerListener> listeners;
+	Set<ConsumerThread> consumerThreads;
+	Set<ProducerListener> listeners;
 
 	public ConnectorController(TSPEngine engine, KafkaManager kafkaManager) {
 		this.engine = engine;
 		this.kafkaManager = kafkaManager;
 
-		this.consumers = new HashSet<Consumer>();
-		this.listeners = new HashSet<KafkaProducerListener>();
+		this.consumerThreads = new HashSet<ConsumerThread>();
+		this.listeners = new HashSet<ProducerListener>();
+	}
+
+	public ConsumerThread getConsumerThread(int hashCode) {
+		for (ConsumerThread consumerThread : consumerThreads) {
+			if (consumerThread.hashCode() == hashCode) {
+				return consumerThread;
+			}
+		}
+		return null;
+	}
+
+	public ProducerListener getListener(int hashCode) {
+		for (ProducerListener listener : listeners) {
+			if (listener.hashCode() == hashCode) {
+				return listener;
+			}
+		}
+		return null;
 	}
 
 	public int connect(ConsumerConnector connector) {
 		InputProcessor input = new JSONInputProcessor(this.engine, connector.schemaName);
-		Consumer consumer = this.kafkaManager.createConsumer(connector.topic, input);
+		ConsumerThread consumerThread;
+		if (connector.topic != null) {
+			consumerThread = this.kafkaManager.createConsumerThread(connector.topic, input);
+		} else {
+			IConsumer consumer = new StringQueueConsumer();
+			consumerThread = this.kafkaManager.createConsumerThread(consumer, input);
+		}
 
-		this.consumers.add(consumer);
-		return consumer.hashCode();
+		this.consumerThreads.add(consumerThread);
+		return consumerThread.hashCode();
 	}
 
 	public int connect(ProducerConnector connector) {
-		Producer producer = this.kafkaManager.createProducer(connector.topic);
-		KafkaProducerListener listener = new KafkaProducerListener(producer, connector.eplStatementName);
+		IProducer producer;
+		if (connector.topic != null) {
+			producer = this.kafkaManager.createProducer(connector.topic);
+		} else {
+			producer = new StringQueueProducer();
+		}
+		ProducerListener listener = new ProducerListener(producer, connector.eplStatementName);
 
 		this.engine.addListener(connector.eplStatementName, listener);
 		this.listeners.add(listener);
@@ -42,10 +71,9 @@ public class ConnectorController {
 	}
 
 	public void disconnect(int id) {
-		this.consumers.forEach((consumer) -> {
+		this.consumerThreads.forEach((consumer) -> {
 			if (consumer.hashCode() == id) {
-				this.consumers.remove(consumer);
-				consumer.stop();
+				this.consumerThreads.remove(consumer);
 				return;
 			}
 		});

@@ -1,28 +1,34 @@
 package com.trovent.streamprocessor.test;
 
-import java.util.HashMap;
-import java.util.Map;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.espertech.esper.client.EventBean;
-import com.espertech.esper.client.UpdateListener;
 import com.google.gson.Gson;
+import com.trovent.streamprocessor.esper.BufferedListener;
+import com.trovent.streamprocessor.esper.EplEvent;
 import com.trovent.streamprocessor.esper.EplSchema;
 import com.trovent.streamprocessor.esper.EplStatement;
 import com.trovent.streamprocessor.esper.TSPEngine;
 import com.trovent.streamprocessor.kafka.ConnectorController;
+import com.trovent.streamprocessor.kafka.ConsumerThread;
 import com.trovent.streamprocessor.kafka.KafkaManager;
-import com.trovent.streamprocessor.kafka.Producer;
+import com.trovent.streamprocessor.kafka.ProducerListener;
+import com.trovent.streamprocessor.kafka.StringQueueConsumer;
+import com.trovent.streamprocessor.kafka.StringQueueProducer;
 import com.trovent.streamprocessor.restapi.ConsumerConnector;
+import com.trovent.streamprocessor.restapi.ProducerConnector;
 
 class TestConnectorController {
 
 	TSPEngine engine = TSPEngine.create();
 
-	KafkaManager kafkaManager = new KafkaManager();
+	KafkaManager kafkaManager;
+
+	StringQueueConsumer consumer;
 
 	String topic = "input";
 
@@ -32,20 +38,19 @@ class TestConnectorController {
 	@BeforeEach
 	void setUp() throws Exception {
 
+		kafkaManager = new KafkaManager();
+
+		consumer = new StringQueueConsumer();
+
 		engine.init();
 
 		schema = new EplSchema("employees");
-		schema.add("name", "string").add("length", "integer").add("isMale", "boolean");
+		schema.add("name", "string").add("duration", "integer").add("isMale", "boolean");
 
-		statement = new EplStatement("FilterNewbies", "select * from employees where length<2");
+		statement = new EplStatement("FilterNewbies", "select * from employees where duration<4");
 
 		engine.addEPLSchema(schema);
 		engine.addEPLStatement(statement);
-
-		// InputProcessor input = new JSONInputProcessor(this.engine, schema.name);
-
-		// Consumer c = this.kafkaManager.createConsumer(topic, input);
-		// Producer p = this.kafkaManager.createProducer(topic);
 	}
 
 	@AfterEach
@@ -53,43 +58,144 @@ class TestConnectorController {
 	}
 
 	@Test
-	void testA() throws InterruptedException {
+	void testConsumerConnector() throws InterruptedException {
+
+		// Test: (data) => Consumer => TSPEngine => (result)
+		//
+		// connect TSPEngine with consumer given by connector
+		ConnectorController controller = new ConnectorController(this.engine, this.kafkaManager);
+		ConsumerConnector connector = new ConsumerConnector(null, schema.name);
+		int hashCode = controller.connect(connector);
+
+		// get consumer object for debugging purposes
+		ConsumerThread cThread = controller.getConsumerThread(hashCode);
+		assertNotNull(cThread);
+		StringQueueConsumer consumer = (StringQueueConsumer) cThread.getConsumer();
+		assertNotNull(consumer);
+
+		// create a listener to read output events
+		BufferedListener listener = new BufferedListener();
+		this.engine.addListener(statement.name, listener);
+
+		// push event into consumer
+		// => will be read be consumerThread
+		// => will be put into connected event schema (schema.name)
+		EplEvent event = new EplEvent(schema.name).add("name", "John").add("duration", 1).add("isMale", true);
+		Gson gson = new Gson();
+		consumer.push(gson.toJson(event.data));
+
+		while (listener.peek() == null) {
+			Thread.sleep(10);
+		}
+
+		EplEvent outputEvent = listener.poll();
+		assertEquals(event.data, outputEvent.data);
+	}
+
+	@Test
+	void testProducerConnector() throws InterruptedException {
+
+		// Test: (data) => TSPEngine => Producer => (result)
+		//
 		ConnectorController controller = new ConnectorController(this.engine, this.kafkaManager);
 
-		ConsumerConnector connector = new ConsumerConnector(topic, schema.name);
-		controller.connect(connector);
+		// on every event in <statement.name>, data is written into producer
+		ProducerConnector connector = new ProducerConnector(null, statement.name);
+		int hashCode = controller.connect(connector);
+
+		// get listener to check output events
+		ProducerListener listener = controller.getListener(hashCode);
+		assertNotNull(listener);
+		StringQueueProducer producer = (StringQueueProducer) listener.getProducer();
+		assertNotNull(producer);
 
 		// now kafka topic "input" is connector to schema "employees"
 		// => consumer thread reads data from kafka into esper schema
-		// TODO: put data into kafka => create producer manually
-		// TODO: check that data is comming in => create and add Listener
+		EplEvent eventEve = new EplEvent("employees").add("name", "Eve").add("duration", 1).add("isMale", false);
+		EplEvent eventBob = new EplEvent("employees").add("name", "Bob").add("duration", 2).add("isMale", true);
+		this.engine.sendEPLEvent(eventEve);
+		this.engine.sendEPLEvent(eventBob);
 
-		class MyListener implements UpdateListener {
-			public int counter = 0;
-
-			public void update(EventBean[] newEvents, EventBean[] oldEvents) {
-				for (EventBean event : newEvents) {
-					System.out.println(event.toString());
-					counter++;
-				}
-			}
+		// wait until processed
+		while (producer.isEmpty()) {
+			Thread.sleep(10);
 		}
-
-		MyListener listener = new MyListener();
-		this.engine.addListener(statement.name, listener);
-
-		Producer producer = this.kafkaManager.createProducer(topic);
 
 		Gson gson = new Gson();
-		Map<String, Object> data = new HashMap<String, Object>();
-		data.put("name", "John");
-		data.put("length", 1);
-		data.put("isMale", true);
-		producer.send(gson.toJson(data));
 
-		while (listener.counter == 0) {
-			System.out.println("waiting...");
-		}
+		// retrieve from StringQueueProducer
+		String data = producer.poll();
+		assertNotNull(data);
+
+		// compare
+		EplEvent jsonData = gson.fromJson(data, EplEvent.class);
+		assertEquals(jsonData.data.get("name"), eventEve.data.get("name"));
+		assertEquals(jsonData.data.get("isMale"), eventEve.data.get("isMale"));
+
+		// retrieve from StringQueueProducer
+		data = producer.poll();
+		assertNotNull(data);
+
+		// compare
+		jsonData = gson.fromJson(data, EplEvent.class);
+		assertEquals(jsonData.data.get("name"), eventBob.data.get("name"));
+		assertEquals(jsonData.data.get("isMale"), eventBob.data.get("isMale"));
 	}
 
+	@Test
+	void testConnectorPipeline() throws InterruptedException {
+
+		// Test: (data) => Consumer => TSPEngine => Producer => (result)
+		//
+		ConnectorController controller = new ConnectorController(this.engine, this.kafkaManager);
+
+		ProducerConnector prodConnector = new ProducerConnector(null, statement.name);
+		int hashCodeListener = controller.connect(prodConnector);
+
+		ConsumerConnector conConnector = new ConsumerConnector(null, schema.name);
+		int hashCodeConsumer = controller.connect(conConnector);
+
+		// --- get internal objects needed for testing ---
+		ProducerListener listener = controller.getListener(hashCodeListener);
+		assertNotNull(listener);
+		StringQueueProducer producer = (StringQueueProducer) listener.getProducer();
+		assertNotNull(producer);
+
+		ConsumerThread cThread = controller.getConsumerThread(hashCodeConsumer);
+		assertNotNull(cThread);
+		StringQueueConsumer consumer = (StringQueueConsumer) cThread.getConsumer();
+		assertNotNull(consumer);
+		// --- --- ---
+
+		// create testing data
+		EplEvent eventEve = new EplEvent("employees").add("name", "Eve").add("duration", 1).add("isMale", false);
+		EplEvent eventBob = new EplEvent("employees").add("name", "Bob").add("duration", 2).add("isMale", true);
+
+		assertEquals(0, producer.count());
+
+		// put data into consumer => esper can consumer
+		Gson gson = new Gson();
+		consumer.push(gson.toJson(eventEve.data));
+
+		while (producer.count() < 1) {
+			Thread.sleep(10);
+		}
+		consumer.push(gson.toJson(eventBob.data));
+
+		while (producer.count() < 2) {
+			Thread.sleep(10);
+		}
+
+		// check results that arrived in the producer
+		assertEquals(2, producer.count());
+		String data = producer.poll();
+		EplEvent event = gson.fromJson(data, EplEvent.class);
+		assertEquals(eventEve.eventTypeName, event.eventTypeName);
+		assertEquals(eventEve.data.get("name"), event.data.get("name"));
+
+		data = producer.poll();
+		event = gson.fromJson(data, EplEvent.class);
+		assertEquals(eventBob.eventTypeName, event.eventTypeName);
+		assertEquals(eventBob.data.get("name"), event.data.get("name"));
+	}
 }

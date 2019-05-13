@@ -13,7 +13,7 @@ import com.espertech.esper.client.UpdateListener;
 import com.trovent.streamprocessor.esper.TSPEngine;
 import com.trovent.streamprocessor.kafka.InputProcessor;
 import com.trovent.streamprocessor.kafka.KafkaManager;
-import com.trovent.streamprocessor.kafka.Producer;
+import com.trovent.streamprocessor.kafka.TSPKafkaProducer;
 import com.trovent.streamprocessor.restapi.ApplicationServer;
 
 public class Application {
@@ -124,14 +124,14 @@ public class Application {
 
 		// connect event/schema with Kafka topic
 		InputProcessor input = new JSONInputProcessor(this.engine, eventName);
-		this.kafkaManager.createConsumer(topic, input);
+		this.kafkaManager.createConsumerThread(topic, input);
 
 		// define Listener that outputs the events from the statement
 		class MyListener implements UpdateListener {
 
-			Producer kafkaProducer;
+			TSPKafkaProducer kafkaProducer;
 
-			MyListener(Producer producer) {
+			MyListener(TSPKafkaProducer producer) {
 				this.kafkaProducer = producer;
 			}
 

@@ -14,6 +14,10 @@ public class StringQueueProducer implements IProducer {
 		return this.queue.poll();
 	}
 
+	public String peek() {
+		return this.queue.peek();
+	}
+
 	public int count() {
 		return this.queue.size();
 	}

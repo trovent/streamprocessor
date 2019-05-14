@@ -3,12 +3,16 @@ package com.trovent.streamprocessor.test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import java.io.IOException;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import com.trovent.streamprocessor.esper.BufferedListener;
 import com.trovent.streamprocessor.esper.EplEvent;
 import com.trovent.streamprocessor.esper.EplSchema;
 import com.trovent.streamprocessor.esper.EplStatement;
@@ -47,7 +51,7 @@ class TestConnectorController {
 		schema = new EplSchema("employees");
 		schema.add("name", "string").add("duration", "integer").add("isMale", "boolean");
 
-		statement = new EplStatement("FilterNewbies", "select * from employees where duration<4");
+		statement = new EplStatement("FilterNewbies", "select name, duration, isMale from employees where duration<4");
 
 		engine.addEPLSchema(schema);
 		engine.addEPLStatement(statement);
@@ -58,7 +62,7 @@ class TestConnectorController {
 	}
 
 	@Test
-	void testConsumerConnector() throws InterruptedException {
+	void testConsumerConnector() throws InterruptedException, JsonParseException, JsonMappingException, IOException {
 
 		// Test: (data) => Consumer => TSPEngine => (result)
 		//
@@ -74,22 +78,25 @@ class TestConnectorController {
 		assertNotNull(consumer);
 
 		// create a listener to read output events
-		BufferedListener listener = new BufferedListener();
-		this.engine.addListener(statement.name, listener);
+		StringQueueProducer producer = new StringQueueProducer();
+		this.engine.addListener(statement.name, new ProducerListener(producer));
 
 		// push event into consumer
 		// => will be read be consumerThread
 		// => will be put into connected event schema (schema.name)
 		EplEvent event = new EplEvent(schema.name).add("name", "John").add("duration", 1).add("isMale", true);
-		Gson gson = new Gson();
-		consumer.push(gson.toJson(event.data));
+		ObjectMapper mapper = new ObjectMapper();
+		String jsonEvent = mapper.writeValueAsString(event.data);
+		consumer.push(jsonEvent);
 
-		while (listener.peek() == null) {
+		while (producer.isEmpty()) {
 			Thread.sleep(10);
 		}
 
-		EplEvent outputEvent = listener.poll();
-		assertEquals(event.data, outputEvent.data);
+		String outputEvent = producer.poll();
+		EplEvent resultEvent = mapper.readValue(outputEvent, EplEvent.class);
+
+		assertEquals(event.data, resultEvent.data);
 	}
 
 	@Test
@@ -190,12 +197,10 @@ class TestConnectorController {
 		assertEquals(2, producer.count());
 		String data = producer.poll();
 		EplEvent event = gson.fromJson(data, EplEvent.class);
-		assertEquals(eventEve.eventTypeName, event.eventTypeName);
 		assertEquals(eventEve.data.get("name"), event.data.get("name"));
 
 		data = producer.poll();
 		event = gson.fromJson(data, EplEvent.class);
-		assertEquals(eventBob.eventTypeName, event.eventTypeName);
 		assertEquals(eventBob.data.get("name"), event.data.get("name"));
 	}
 }

@@ -17,7 +17,12 @@ public class ProducerListener implements UpdateListener {
 
 	private String statementName;
 
-	ProducerListener(IProducer producer, String statementName) {
+	public ProducerListener(IProducer producer) {
+		this.producer = producer;
+		this.logger = LogManager.getLogger();
+	}
+
+	public ProducerListener(IProducer producer, String statementName) {
 		this.producer = producer;
 		this.logger = LogManager.getLogger();
 		this.setStatementName(statementName);

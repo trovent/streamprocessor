@@ -2,13 +2,14 @@ package com.trovent.streamprocessor.test.kafka;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.io.IOException;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.trovent.streamprocessor.JSONInputProcessor;
-import com.trovent.streamprocessor.esper.BufferedListener;
 import com.trovent.streamprocessor.esper.EplEvent;
 import com.trovent.streamprocessor.esper.EplSchema;
 import com.trovent.streamprocessor.esper.EplStatement;
@@ -16,7 +17,9 @@ import com.trovent.streamprocessor.esper.TSPEngine;
 import com.trovent.streamprocessor.kafka.ConsumerThread;
 import com.trovent.streamprocessor.kafka.InputProcessor;
 import com.trovent.streamprocessor.kafka.KafkaManager;
+import com.trovent.streamprocessor.kafka.ProducerListener;
 import com.trovent.streamprocessor.kafka.StringQueueConsumer;
+import com.trovent.streamprocessor.kafka.StringQueueProducer;
 
 class TestKafkaManager {
 
@@ -47,7 +50,7 @@ class TestKafkaManager {
 	}
 
 	@Test
-	void testCreateConsumerThread() throws InterruptedException {
+	void testCreateConsumerThread() throws InterruptedException, IOException {
 		// create input processer which send data to Esper engine
 		InputProcessor input = new JSONInputProcessor(this.engine, this.schema.name);
 		// create StringQueueConsumer - reading string data from a Queue
@@ -55,22 +58,23 @@ class TestKafkaManager {
 
 		ConsumerThread consumerThread = manager.createConsumerThread(consumer, input);
 
-		BufferedListener listener = new BufferedListener();
-		this.engine.addListener(this.statement.name, listener);
+		StringQueueProducer producer = new StringQueueProducer();
+		this.engine.addListener(this.statement.name, new ProducerListener(producer));
 
 		// build an event and send push it to consumer
 		EplEvent inputEvent = new EplEvent().add("one", "Hello").add("two", 666);
-		Gson gson = new Gson();
-		consumer.push(gson.toJson(inputEvent.data));
+		ObjectMapper jackson = new ObjectMapper();
+		consumer.push(jackson.writeValueAsString(inputEvent.data));
 
-		while (listener.size() == 0) {
+		while (producer.isEmpty()) {
 			Thread.sleep(100);
 		}
 
-		assertEquals(1, listener.size());
+		assertEquals(1, producer.count());
 
-		EplEvent outputEvent = listener.peek();
-		assertEquals(inputEvent.data.get("one"), outputEvent.data.get("one"));
+		String output = producer.poll();
+		EplEvent resultEvent = jackson.readValue(output, EplEvent.class);
+		assertEquals(inputEvent.data, resultEvent.data);
 
 		consumerThread.stop();
 	}

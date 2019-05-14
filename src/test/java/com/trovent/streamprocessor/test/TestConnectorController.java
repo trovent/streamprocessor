@@ -11,8 +11,6 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 import com.trovent.streamprocessor.esper.EplEvent;
 import com.trovent.streamprocessor.esper.EplSchema;
 import com.trovent.streamprocessor.esper.EplStatement;
@@ -85,22 +83,20 @@ class TestConnectorController {
 		// => will be read be consumerThread
 		// => will be put into connected event schema (schema.name)
 		EplEvent event = new EplEvent(schema.name).add("name", "John").add("duration", 1).add("isMale", true);
-		ObjectMapper mapper = new ObjectMapper();
-		String jsonEvent = mapper.writeValueAsString(event.data);
-		consumer.push(jsonEvent);
+		consumer.push(event.dataToJson());
 
 		while (producer.isEmpty()) {
 			Thread.sleep(10);
 		}
 
 		String outputEvent = producer.poll();
-		EplEvent resultEvent = mapper.readValue(outputEvent, EplEvent.class);
+		EplEvent resultEvent = EplEvent.fromJson(outputEvent);
 
 		assertEquals(event.data, resultEvent.data);
 	}
 
 	@Test
-	void testProducerConnector() throws InterruptedException {
+	void testProducerConnector() throws InterruptedException, JsonParseException, JsonMappingException, IOException {
 
 		// Test: (data) => TSPEngine => Producer => (result)
 		//
@@ -128,29 +124,25 @@ class TestConnectorController {
 			Thread.sleep(10);
 		}
 
-		Gson gson = new Gson();
-
 		// retrieve from StringQueueProducer
 		String data = producer.poll();
 		assertNotNull(data);
 
 		// compare
-		EplEvent jsonData = gson.fromJson(data, EplEvent.class);
-		assertEquals(jsonData.data.get("name"), eventEve.data.get("name"));
-		assertEquals(jsonData.data.get("isMale"), eventEve.data.get("isMale"));
+		EplEvent result = EplEvent.fromJson(data);
+		assertEquals(eventEve.data, result.data);
 
 		// retrieve from StringQueueProducer
 		data = producer.poll();
 		assertNotNull(data);
 
 		// compare
-		jsonData = gson.fromJson(data, EplEvent.class);
-		assertEquals(jsonData.data.get("name"), eventBob.data.get("name"));
-		assertEquals(jsonData.data.get("isMale"), eventBob.data.get("isMale"));
+		result = EplEvent.fromJson(data);
+		assertEquals(eventBob.data, result.data);
 	}
 
 	@Test
-	void testConnectorPipeline() throws InterruptedException {
+	void testConnectorPipeline() throws InterruptedException, IOException {
 
 		// Test: (data) => Consumer => TSPEngine => Producer => (result)
 		//
@@ -181,13 +173,12 @@ class TestConnectorController {
 		assertEquals(0, producer.count());
 
 		// put data into consumer => esper can consumer
-		Gson gson = new Gson();
-		consumer.push(gson.toJson(eventEve.data));
+		consumer.push(eventEve.dataToJson());
 
 		while (producer.count() < 1) {
 			Thread.sleep(10);
 		}
-		consumer.push(gson.toJson(eventBob.data));
+		consumer.push(eventBob.dataToJson());
 
 		while (producer.count() < 2) {
 			Thread.sleep(10);
@@ -196,11 +187,11 @@ class TestConnectorController {
 		// check results that arrived in the producer
 		assertEquals(2, producer.count());
 		String data = producer.poll();
-		EplEvent event = gson.fromJson(data, EplEvent.class);
-		assertEquals(eventEve.data.get("name"), event.data.get("name"));
+		EplEvent event = EplEvent.fromJson(data);
+		assertEquals(eventEve.data, event.data);
 
 		data = producer.poll();
-		event = gson.fromJson(data, EplEvent.class);
-		assertEquals(eventBob.data.get("name"), event.data.get("name"));
+		event = EplEvent.fromJson(data);
+		assertEquals(eventBob.data, event.data);
 	}
 }

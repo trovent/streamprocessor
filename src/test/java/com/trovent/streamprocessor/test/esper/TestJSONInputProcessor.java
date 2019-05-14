@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,11 +14,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.espertech.esper.client.EPException;
-import com.espertech.esper.client.EPStatement;
-import com.espertech.esper.client.EventBean;
-import com.espertech.esper.client.UpdateListener;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.trovent.streamprocessor.JSONInputProcessor;
+import com.trovent.streamprocessor.esper.EplEvent;
 import com.trovent.streamprocessor.esper.TSPEngine;
+import com.trovent.streamprocessor.kafka.ProducerListener;
+import com.trovent.streamprocessor.kafka.StringQueueProducer;
 
 public class TestJSONInputProcessor {
 
@@ -77,58 +80,8 @@ public class TestJSONInputProcessor {
 	}
 
 	@Test
-	public void testProcessWithMapFailed() {
-		JSONInputProcessor input = new JSONInputProcessor(engine, DEFAULT_SCHEMA);
-
-		Map<String, String> data = new HashMap<String, String>();
-		data.put("nameX", "MyName");
-		data.put("age", "42");
-		data.put("isAdult", "true");
-
-		assertFalse(input.process(data));
-	}
-
-	@Test
-	public void testProcessWithMapSuccess() {
-		JSONInputProcessor input = new JSONInputProcessor(engine, DEFAULT_SCHEMA);
-
-		Map<String, String> data = new HashMap<String, String>();
-		data.put("name", "John Doe");
-		data.put("age", "33");
-		data.put("isAdult", "true");
-
-		assertTrue(input.process(data));
-	}
-
-	@Test
-	public void testProcessWithMapOnStatement() {
-		JSONInputProcessor input = new JSONInputProcessor(engine, DEFAULT_SCHEMA);
-
-		Map<String, String> data = new HashMap<String, String>();
-		data.put("name", "MyName");
-		data.put("age", "42");
-		data.put("isAdult", "true");
-
-		final String STMT_NAME = "MyStatement";
-		String stmt = "select *, sum(age), count(*) from " + DEFAULT_SCHEMA;
-		this.engine.addEPLStatement(stmt, STMT_NAME);
-
-		EPStatement epStatement = this.engine.getEPServiceProvider().getEPAdministrator().getStatement(STMT_NAME);
-
-		epStatement.addListener((newData, oldData) -> {
-			System.out.println("Listener");
-			EventBean eb = newData[0];
-			for (String propName : eb.getEventType().getPropertyNames()) {
-				System.out.println(String.format("  %s : %s", propName, eb.get(propName)));
-			}
-
-		});
-
-		assertTrue(input.process(data));
-	}
-
-	@Test
-	public void testProcessWithTypeConversionError() {
+	public void testProcessWithJSONInput()
+			throws JsonParseException, JsonMappingException, IOException, InterruptedException {
 		JSONInputProcessor input = new JSONInputProcessor(engine, DEFAULT_SCHEMA);
 
 		// create statement, add to engine
@@ -136,45 +89,23 @@ public class TestJSONInputProcessor {
 		String stmt = "select *, sum(age), count(*) from " + DEFAULT_SCHEMA;
 		this.engine.addEPLStatement(stmt, STMT_NAME);
 
-		// create malformed data in JSON format
-		Map<String, String> data = new HashMap<String, String>();
-		data.put("name", "John Doe");
-		data.put("age", "abc");
-		data.put("isAdult", "true");
-		assertFalse(input.process(data));
-	}
-
-	@Test
-	public void testProcessWithJSONInput() {
-		JSONInputProcessor input = new JSONInputProcessor(engine, DEFAULT_SCHEMA);
-
-		// create statement, add to engine
-		final String STMT_NAME = "MyStatement";
-		String stmt = "select *, sum(age), count(*) from " + DEFAULT_SCHEMA;
-		this.engine.addEPLStatement(stmt, STMT_NAME);
-
-		// create listener with tests
-		class MyListener implements UpdateListener {
-			Boolean isDone = false;
-			int length = 0;
-
-			public void update(EventBean[] newEvents, EventBean[] oldEvents) {
-				this.length = newEvents[0].getEventType().getPropertyNames().length;
-				this.isDone = true;
-			}
-		}
-		// add listener to statement
-		MyListener listener = new MyListener();
-		this.engine.addListener(STMT_NAME, listener);
-		assertEquals(0, listener.length);
+		StringQueueProducer producer = new StringQueueProducer();
+		this.engine.addListener(STMT_NAME, new ProducerListener(producer));
+		assertEquals(0, producer.count());
 
 		// create data in JSON format
-		String data = "{ \"name\" : \"MyName\", \"age\" : 42, \"isAdult\" : \"true\" }";
-		assertTrue(input.process(data));
+		String jsonData = "{ \"name\" : \"MyName\", \"age\" : 42, \"isAdult\" : true }";
+		assertTrue(input.process(jsonData));
 
-		while (!listener.isDone)
-			;
-		assertEquals(5, listener.length);
+		// wait for listener
+		while (producer.isEmpty()) {
+			Thread.sleep(10);
+		}
+
+		EplEvent event = EplEvent.fromJson(producer.poll());
+
+		// check for 5 field in resulting event
+		assertEquals(5, event.data.keySet().size());
 	}
 
 	@Test
@@ -192,7 +123,8 @@ public class TestJSONInputProcessor {
 	}
 
 	@Test
-	public void testProcessWithAllTypes() {
+	public void testProcessWithAllTypes()
+			throws InterruptedException, JsonParseException, JsonMappingException, IOException {
 		final String SCHEMA = "AllTypes";
 
 		Map<String, String> schema = new HashMap<String, String>();
@@ -214,20 +146,11 @@ public class TestJSONInputProcessor {
 		String stmt = "select *, sum(age) from " + SCHEMA;
 		this.engine.addEPLStatement(stmt, STMT_NAME);
 
-		// create listener with tests
-		class MyListener implements UpdateListener {
-			Boolean isDone = false;
-			int length = 0;
-
-			public void update(EventBean[] newEvents, EventBean[] oldEvents) {
-				this.length = newEvents[0].getEventType().getPropertyNames().length;
-				this.isDone = true;
-			}
-		}
 		// add listener to statement
-		MyListener listener = new MyListener();
-		this.engine.addListener(STMT_NAME, listener);
-		assertEquals(0, listener.length);
+		StringQueueProducer producer = new StringQueueProducer();
+		this.engine.addListener(STMT_NAME, new ProducerListener(producer));
+
+		assertEquals(0, producer.count());
 
 		// create data in JSON format
 		String data = "{ \"name\" : \"MyName\", \"age\" : 42, "
@@ -236,8 +159,14 @@ public class TestJSONInputProcessor {
 				+ "\"Hash\" : 11112222333344445555666677778888, " + " \"HashDec\" : 987654321.987654321" + "}";
 		assertTrue(input.process(data));
 
-		while (!listener.isDone)
-			;
-		assertEquals(10, listener.length);
+		// wait for listener
+		while (producer.isEmpty()) {
+			Thread.sleep(10);
+		}
+
+		EplEvent event = EplEvent.fromJson(producer.poll());
+
+		// check for 5 field in resulting event
+		assertEquals(10, event.data.keySet().size());
 	}
 }

@@ -1,16 +1,11 @@
 package com.trovent.streamprocessor;
 
-import java.lang.reflect.Type;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
 
 import com.espertech.esper.client.EPException;
-import com.espertech.esper.client.EventPropertyDescriptor;
-import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
-import com.google.gson.reflect.TypeToken;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.trovent.streamprocessor.esper.EplEvent;
 import com.trovent.streamprocessor.esper.TSPEngine;
 
 /**
@@ -42,58 +37,6 @@ public class JSONInputProcessor extends AbstractInputProcessor {
 	}
 
 	/**
-	 * Process the incoming data given as Map. If the format matches the previously
-	 * set event type, the data is transformed into an esper event and sent to the
-	 * engine. The method fails and returns true if it detects a type mismatch or
-	 * required fields are missing.
-	 * 
-	 * @param input The input event given as key-value pairs
-	 * @return true if the event was processed successfully, false otherwise
-	 */
-	public Boolean process(Map<String, String> input) {
-		Map<String, Object> event = new HashMap<String, Object>();
-		for (EventPropertyDescriptor descriptor : this.eventType.getPropertyDescriptors()) {
-			String propName = descriptor.getPropertyName();
-			Class<?> propType = descriptor.getPropertyType();
-
-			if (!input.containsKey(propName)) {
-				logger.warn("cannot process '{}' - field '{}' is missing", input, propName);
-				return false;
-			}
-
-			String value = input.get(propName);
-			try {
-				if (propType == String.class) {
-					event.put(propName, value);
-				} else if (propType == Integer.class) {
-					event.put(propName, new Integer(value));
-				} else if (propType == Boolean.class) {
-					event.put(propName, new Boolean(value));
-				} else if (propType == Float.class) {
-					event.put(propName, new Float(value));
-				} else if (propType == Double.class) {
-					event.put(propName, new Double(value));
-				} else if (propType == Long.class) {
-					event.put(propName, new Long(value));
-				} else if (propType == Byte.class) {
-					event.put(propName, new Byte(value));
-				} else if (propType == BigInteger.class) {
-					event.put(propName, new BigInteger(value));
-				} else if (propType == BigDecimal.class) {
-					event.put(propName, new BigDecimal(value));
-				}
-			} catch (NumberFormatException e) {
-				logger.warn("type mismatch for value '{}' of field '{}' - could not convert to {}", value, propName,
-						propType.toString());
-				return false;
-			}
-
-		}
-		this.engine.sendEPLEvent(this.eventType.getName(), event);
-		return true;
-	}
-
-	/**
 	 * Process the incoming data given as json string. The json string is parsed and
 	 * transformed into Map<String, String>. If the format matches the previously
 	 * set event type, the data is transformed into an esper event and sent to the
@@ -109,18 +52,22 @@ public class JSONInputProcessor extends AbstractInputProcessor {
 
 		this.logger.debug(String.format("input: '%s'", input));
 
-		Type mapToken = new TypeToken<Map<String, String>>() {
-		}.getType();
-
-		Gson gson = new Gson();
 		try {
-			Map<String, String> inputAsMap = gson.fromJson(input, mapToken);
-			return this.process(inputAsMap);
-		} catch (JsonSyntaxException e) {
-			this.logger.warn(e);
-			this.logger.warn("input: {}", input);
+			EplEvent event = new EplEvent(this.eventType.getName());
+			event.dataFromJson(input);
+
+			this.engine.sendEPLEvent(event);
+		} catch (JsonParseException e1) {
+			this.logger.warn(e1.getMessage());
+			return false;
+		} catch (JsonMappingException e1) {
+			this.logger.warn(e1.getMessage());
+			return false;
+		} catch (IOException e1) {
+			this.logger.warn(e1.getMessage());
 			return false;
 		}
 
+		return true;
 	}
 }

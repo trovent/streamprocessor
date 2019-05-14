@@ -6,7 +6,7 @@ import org.apache.logging.log4j.Logger;
 import com.espertech.esper.client.EventBean;
 import com.espertech.esper.client.EventPropertyDescriptor;
 import com.espertech.esper.client.UpdateListener;
-import com.google.gson.Gson;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.trovent.streamprocessor.esper.EplEvent;
 
 public class ProducerListener implements UpdateListener {
@@ -41,12 +41,17 @@ public class ProducerListener implements UpdateListener {
 				String propName = descriptor.getPropertyName();
 				event.add(propName, eb.get(propName));
 			}
-			String jsonString = new Gson().toJson(event);
 
-			logger.info(jsonString);
-			this.producer.send(jsonString);
+			String jsonString;
+			try {
+				jsonString = event.toJson();
+				logger.info(jsonString);
+				this.producer.send(jsonString);
+			} catch (JsonProcessingException e) {
+				logger.error("Error converting event into json format");
+				logger.error(e.getMessage());
+			}
 		}
-
 	}
 
 	public String getStatementName() {

@@ -84,6 +84,38 @@ public class ConnectorController {
 		return listener.hashCode();
 	}
 
+	/**
+	 * Return a map of all active Consumers connected to a Kafka topic. Key of each
+	 * entry is the hashCode of the consumer thread.
+	 * 
+	 * @return Map containing all HashCode - ConsumerConnector pairs
+	 */
+	public Map<Integer, ConsumerConnector> getConsumers() {
+		Map<Integer, ConsumerConnector> connectors = new HashMap<Integer, ConsumerConnector>();
+
+		for (ConsumerThread thread : this.consumerThreads) {
+			connectors.put(thread.hashCode(), thread.getConnector());
+		}
+
+		return connectors;
+	}
+
+	/**
+	 * Return a map of all active Producers connected to a Kafka topic. Key of each
+	 * entry is the hashCode of the ProducerListener.
+	 * 
+	 * @return
+	 */
+	public Map<Integer, ProducerConnector> getProducers() {
+		Map<Integer, ProducerConnector> connectors = new HashMap<Integer, ProducerConnector>();
+
+		for (ProducerListener listener : this.listeners) {
+			connectors.put(listener.hashCode(), listener.getConnector());
+		}
+
+		return connectors;
+	}
+
 	public void disconnect(int id) {
 		this.consumerThreads.forEach((consumer) -> {
 			if (consumer.hashCode() == id) {

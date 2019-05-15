@@ -65,9 +65,7 @@ public class TestEsperService {
 	@Test
 	public void testAddSchema() {
 		EplSchema schema = new EplSchema("zero");
-		schema.fields.put("name", "string");
-		schema.fields.put("age", "integer");
-		schema.fields.put("isAdult", "boolean");
+		schema.add("name", "string").add("age", "integer").add("isAdult", "boolean");
 
 		Response response = target.path("api/schema").request().post(Entity.entity(schema, MediaType.APPLICATION_JSON));
 		String result = response.readEntity(String.class);

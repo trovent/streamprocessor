@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 
 import javax.ws.rs.client.Client;
@@ -19,11 +18,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.espertech.esper.client.EventBean;
-import com.espertech.esper.client.UpdateListener;
 import com.trovent.streamprocessor.esper.EplEvent;
 import com.trovent.streamprocessor.esper.EplSchema;
 import com.trovent.streamprocessor.esper.EplStatement;
+import com.trovent.streamprocessor.kafka.ProducerListener;
+import com.trovent.streamprocessor.kafka.StringQueueProducer;
 import com.trovent.streamprocessor.restapi.ApplicationServer;
 import com.trovent.streamprocessor.restapi.EsperService;
 
@@ -180,7 +179,7 @@ public class TestEsperService {
 	}
 
 	@Test
-	public void testSendEvent() {
+	public void testSendEvent() throws InterruptedException {
 		String STATEMENTNAME = "counter";
 		EplStatement countingStatement = new EplStatement(STATEMENTNAME,
 				"select count(name) as Number_of_Names from one");
@@ -188,39 +187,18 @@ public class TestEsperService {
 				.post(Entity.entity(countingStatement, MediaType.APPLICATION_JSON));
 		assertEquals(200, response.getStatus());
 
-		LinkedHashMap<String, Object> myMap = new LinkedHashMap<>();
-		myMap.put("name", "Leo");
-		myMap.put("age", 23);
-		myMap.put("isAdult", false);
+		StringQueueProducer producer = new StringQueueProducer();
+		EsperService.getEngine().addListener(STATEMENTNAME, new ProducerListener(producer));
 
-		EplEvent myEvent = new EplEvent();
-		myEvent.eventTypeName = "one";
-		myEvent.data = myMap;
-
-		class ConsoleListener implements UpdateListener {
-
-			public int count = 0;
-
-			@Override
-			public void update(EventBean[] newEvents, EventBean[] oldEvents) {
-				long namen = (long) newEvents[0].get("Number_of_Names");
-				System.out.println(String.format("NumberOfNames: %d", namen));
-				count++;
-			}
-		}
-
-		ConsoleListener myListener = new ConsoleListener();
-		EsperService.getEngine().addListener(STATEMENTNAME, myListener);
-
-		// this works
-		// EsperService.getEngine().sendEPLEvent(myEvent.eventTypeName, myEvent.data);
-
+		EplEvent myEvent = new EplEvent("one").add("name", "Leo").add("age", 23).add("isAdult", false);
 		response = target.path("api/sendEvent/map").request().post(Entity.entity(myEvent, MediaType.APPLICATION_JSON));
 
 		assertEquals(200, response.getStatus());
 
-		while (myListener.count == 00)
-			;
+		while (producer.isEmpty()) {
+			Thread.sleep(10);
+		}
 
+		assertEquals(1, producer.count());
 	}
 }

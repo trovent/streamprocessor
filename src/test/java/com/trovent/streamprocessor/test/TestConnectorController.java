@@ -65,7 +65,7 @@ class TestConnectorController {
 		// Test: (data) => Consumer => TSPEngine => (result)
 		//
 		// connect TSPEngine with consumer given by connector
-		ConnectorController controller = new ConnectorController(this.engine, this.kafkaManager);
+		ConnectorController controller = ConnectorController.create(this.engine, this.kafkaManager);
 		ConsumerConnector connector = new ConsumerConnector(null, schema.name);
 		int hashCode = controller.connect(connector);
 
@@ -100,7 +100,7 @@ class TestConnectorController {
 
 		// Test: (data) => TSPEngine => Producer => (result)
 		//
-		ConnectorController controller = new ConnectorController(this.engine, this.kafkaManager);
+		ConnectorController controller = ConnectorController.create(this.engine, this.kafkaManager);
 
 		// on every event in <statement.name>, data is written into producer
 		ProducerConnector connector = new ProducerConnector(null, statement.name);
@@ -146,7 +146,7 @@ class TestConnectorController {
 
 		// Test: (data) => Consumer => TSPEngine => Producer => (result)
 		//
-		ConnectorController controller = new ConnectorController(this.engine, this.kafkaManager);
+		ConnectorController controller = ConnectorController.create(this.engine, this.kafkaManager);
 
 		ProducerConnector prodConnector = new ProducerConnector(null, statement.name);
 		int hashCodeListener = controller.connect(prodConnector);

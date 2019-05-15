@@ -1,6 +1,8 @@
 package com.trovent.streamprocessor.kafka;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import com.trovent.streamprocessor.JSONInputProcessor;
@@ -10,18 +12,30 @@ import com.trovent.streamprocessor.restapi.ProducerConnector;
 
 public class ConnectorController {
 
+	static private ConnectorController instance = null;
+
 	private TSPEngine engine;
 	private KafkaManager kafkaManager;
 
 	Set<ConsumerThread> consumerThreads;
 	Set<ProducerListener> listeners;
 
-	public ConnectorController(TSPEngine engine, KafkaManager kafkaManager) {
+	private ConnectorController(TSPEngine engine, KafkaManager kafkaManager) {
 		this.engine = engine;
 		this.kafkaManager = kafkaManager;
 
 		this.consumerThreads = new HashSet<ConsumerThread>();
 		this.listeners = new HashSet<ProducerListener>();
+	}
+
+	static public ConnectorController create(TSPEngine engine, KafkaManager kafkaManager) {
+		if (instance == null)
+			instance = new ConnectorController(engine, kafkaManager);
+		return instance;
+	}
+
+	static public ConnectorController getInstance() {
+		return instance;
 	}
 
 	public ConsumerThread getConsumerThread(int hashCode) {

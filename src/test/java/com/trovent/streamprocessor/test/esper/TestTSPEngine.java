@@ -17,11 +17,11 @@ import org.junit.jupiter.api.Test;
 import com.espertech.esper.client.ConfigurationException;
 import com.espertech.esper.client.EPException;
 import com.espertech.esper.client.EPStatementException;
-import com.espertech.esper.client.EventBean;
 import com.espertech.esper.client.EventType;
-import com.espertech.esper.client.UpdateListener;
 import com.trovent.streamprocessor.esper.EplSchema;
 import com.trovent.streamprocessor.esper.TSPEngine;
+import com.trovent.streamprocessor.kafka.ProducerListener;
+import com.trovent.streamprocessor.kafka.StringQueueProducer;
 
 public class TestTSPEngine {
 

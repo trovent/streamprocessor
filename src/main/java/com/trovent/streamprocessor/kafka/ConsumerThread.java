@@ -6,6 +6,9 @@ import java.util.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.trovent.streamprocessor.AbstractInputProcessor;
+import com.trovent.streamprocessor.restapi.ConsumerConnector;
+
 public class ConsumerThread implements Runnable {
 
 	private Logger logger;
@@ -28,6 +31,25 @@ public class ConsumerThread implements Runnable {
 
 	public IConsumer getConsumer() {
 		return this.consumer;
+	}
+
+	public InputProcessor getInputProcessor() {
+		return this.input;
+	}
+
+	public ConsumerConnector getConnector() {
+		String topic = "";
+		String schemaName = "";
+
+		if (consumer instanceof TSPKafkaConsumer) {
+			topic = ((TSPKafkaConsumer) consumer).getTopic();
+		}
+
+		if (input instanceof AbstractInputProcessor) {
+			schemaName = ((AbstractInputProcessor) input).getEventType().getName();
+		}
+
+		return new ConsumerConnector(topic, schemaName);
 	}
 
 	private void init(IConsumer consumer, InputProcessor input) {

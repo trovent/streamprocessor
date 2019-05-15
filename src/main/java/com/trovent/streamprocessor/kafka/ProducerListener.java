@@ -8,6 +8,7 @@ import com.espertech.esper.client.EventPropertyDescriptor;
 import com.espertech.esper.client.UpdateListener;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.trovent.streamprocessor.esper.EplEvent;
+import com.trovent.streamprocessor.restapi.ProducerConnector;
 
 public class ProducerListener implements UpdateListener {
 
@@ -30,6 +31,14 @@ public class ProducerListener implements UpdateListener {
 
 	public IProducer getProducer() {
 		return this.producer;
+	}
+
+	public ProducerConnector getConnector() {
+		String topic = "";
+		if (producer instanceof TSPKafkaProducer) {
+			topic = ((TSPKafkaProducer) this.producer).getTopic();
+		}
+		return new ProducerConnector(topic, this.statementName);
 	}
 
 	@Override

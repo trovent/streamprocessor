@@ -85,11 +85,19 @@ public class TestTSPEngine {
 	@Test
 	public void testAddListenerFailed() {
 		final String STATEMENTNAME = "notExisting";
+		assertThrows(EPException.class,
+				() -> engine.addListener(STATEMENTNAME, new ProducerListener(new StringQueueProducer())));
 	}
 
 	@Test
 	public void testAddListener() {
+		final String SCHEMANAME = "createmyschema";
+		final String STATEMENTNAME = "mystatement";
 
+		engine.addEPLStatement("create map schema inputqueue as (name string, age int)", SCHEMANAME);
+		engine.addEPLStatement("select name from inputqueue", STATEMENTNAME);
+
+		engine.addListener(STATEMENTNAME, new ProducerListener(new StringQueueProducer()));
 	}
 
 	@Test

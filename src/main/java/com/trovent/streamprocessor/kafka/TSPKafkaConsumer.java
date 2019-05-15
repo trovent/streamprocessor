@@ -66,6 +66,10 @@ public class TSPKafkaConsumer implements IConsumer {
 		this.logger.debug(String.format("KafkaConsumer:  starting to read from topic '%s'", this.topic));
 	}
 
+	String getTopic() {
+		return this.topic;
+	}
+
 	/**
 	 * Poll data from a kafka topic and return them as string array. If no data is
 	 * received within a certain timespan, an empty array is returned.

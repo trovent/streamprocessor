@@ -14,6 +14,10 @@ public class TSPKafkaProducer implements IProducer {
 
 	private KafkaProducer<String, String> producer;
 
+	public String getTopic() {
+		return this.topic;
+	}
+
 	public TSPKafkaProducer(Properties props, String topic) {
 		this.topic = topic;
 		this.logger = LogManager.getLogger();

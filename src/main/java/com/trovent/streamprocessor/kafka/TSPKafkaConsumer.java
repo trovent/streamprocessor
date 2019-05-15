@@ -11,6 +11,16 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * 
+ * @author tobias nieberg
+ * 
+ * @brief TSPKafkaConsumer implements a Consumer that reads from a given Kafka
+ *        topic (i.e. it acts like a Kafka Consumer). After initialisation with
+ *        the constructor, method poll() polls data from a kafka host and
+ *        returns them as string array.
+ *
+ */
 public class TSPKafkaConsumer implements IConsumer {
 
 	private Logger logger;
@@ -19,11 +29,24 @@ public class TSPKafkaConsumer implements IConsumer {
 
 	private KafkaConsumer<String, String> consumer;
 
+	/**
+	 * Create a new TSPKafkaConsumer using the given properties option to create a
+	 * new KafkaConsumer object implicitly.
+	 * 
+	 * @param props Properties passed to the KafkaConsumer constructor
+	 * @param topic Topic to read from kafka
+	 */
 	public TSPKafkaConsumer(Properties props, String topic) {
 
 		init(new KafkaConsumer<String, String>(props), topic);
 	}
 
+	/**
+	 * Create a new TSPKafkaConsumer with the given KafkaConsumer object.
+	 * 
+	 * @param kafkaConsumer Existing KafkaConsumer object used to poll data
+	 * @param topic         Topic to read from kafka
+	 */
 	public TSPKafkaConsumer(KafkaConsumer<String, String> kafkaConsumer, String topic) {
 
 		init(kafkaConsumer, topic);
@@ -43,6 +66,13 @@ public class TSPKafkaConsumer implements IConsumer {
 		this.logger.debug(String.format("KafkaConsumer:  starting to read from topic '%s'", this.topic));
 	}
 
+	/**
+	 * Poll data from a kafka topic and return them as string array. If no data is
+	 * received within a certain timespan, an empty array is returned.
+	 * 
+	 * @param duration time to wait for data in milliseconds
+	 * @return Array of strings with data. May be empty.
+	 */
 	@Override
 	public String[] poll(Duration duration) {
 

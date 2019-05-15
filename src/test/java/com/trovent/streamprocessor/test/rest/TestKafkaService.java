@@ -1,6 +1,8 @@
 package com.trovent.streamprocessor.test.rest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -15,8 +17,10 @@ import org.junit.jupiter.api.Test;
 
 import com.trovent.streamprocessor.esper.EplSchema;
 import com.trovent.streamprocessor.esper.EplStatement;
+import com.trovent.streamprocessor.kafka.ConnectorController;
 import com.trovent.streamprocessor.restapi.ApplicationServer;
 import com.trovent.streamprocessor.restapi.ConsumerConnector;
+import com.trovent.streamprocessor.restapi.ProducerConnector;
 
 public class TestKafkaService {
 	ApplicationServer server;
@@ -57,5 +61,57 @@ public class TestKafkaService {
 		String schemaName = defaultSchema.name;
 		ConsumerConnector connector = new ConsumerConnector(topic, schemaName);
 
+	}
+
+	@Test
+	void testGetConsumers() {
+		Response response = target.path("api/consumers").request().get();
+		assertEquals(200, response.getStatus());
+	}
+
+	@Test
+	void addConsumer() {
+		ConsumerConnector cc = new ConsumerConnector("input", defaultSchema.name);
+		Response response = target.path("api/consumer").request().post(Entity.entity(cc, MediaType.APPLICATION_JSON));
+
+		assertEquals(200, response.getStatus());
+		int id = response.readEntity(Integer.class);
+		assertNotEquals(0, id);
+
+		ConnectorController controller = ConnectorController.getInstance();
+		assertEquals(1, controller.getConsumers().size());
+
+		ConsumerConnector cc2 = controller.getConsumers().get(id);
+		assertEquals(cc.topic, cc2.topic);
+		assertEquals(cc.schemaName, cc2.schemaName);
+	}
+
+	@Test
+	void addProducer() {
+		ProducerConnector pc = new ProducerConnector("input", defaultStatement.name);
+		Response response = target.path("api/producer").request().post(Entity.entity(pc, MediaType.APPLICATION_JSON));
+
+		assertEquals(200, response.getStatus());
+		int id = response.readEntity(Integer.class);
+		assertNotEquals(0, id);
+
+		ConnectorController controller = ConnectorController.getInstance();
+		assertEquals(1, controller.getProducers().size());
+
+		ProducerConnector pc2 = controller.getProducers().get(id);
+		assertEquals(pc.topic, pc2.topic);
+		assertEquals(pc.eplStatementName, pc2.eplStatementName);
+	}
+
+	@Test
+	void deleteConsumer() {
+		Response response = target.path("api/consumer/666").request().delete();
+		fail("not implemented");
+	}
+
+	@Test
+	void deleteProducer() {
+		Response response = target.path("api/producer/667").request().delete();
+		fail("not implemented");
 	}
 }

@@ -82,27 +82,9 @@ public class TestTSPEngine {
 		assertEquals(STATEMENTNAME, result);
 	}
 
-	/**
-	 * This class is for testing purposes only
-	 * 
-	 * @author Lukas Steinbrink
-	 *
-	 */
-	class ConsoleListener implements UpdateListener {
-
-		public int count = 0;
-		private String toGet;
-
-		public ConsoleListener(String toGet) {
-			this.toGet = toGet;
-		}
-
-		@Override
-		public void update(EventBean[] newEvents, EventBean[] oldEvents) {
-			Object o = newEvents[0].get(toGet);
-			System.out.println(String.format(toGet + o.toString()));
-			count++;
-		}
+	@Test
+	public void testAddListenerFailed() {
+		final String STATEMENTNAME = "notExisting";
 	}
 
 	@Test

@@ -78,7 +78,7 @@ public class TSPKafkaConsumer implements IConsumer {
 	 * @return Array of strings with data. May be empty.
 	 */
 	@Override
-	public String[] poll(Duration duration) {
+	public List<String> poll(Duration duration) {
 
 		ArrayList<String> data = new ArrayList<>();
 
@@ -89,7 +89,7 @@ public class TSPKafkaConsumer implements IConsumer {
 			data.add(record.value());
 		}
 
-		return (String[]) data.toArray();
+		return data;
 	}
 
 	protected void finalize() {

@@ -1,6 +1,7 @@
 package com.trovent.streamprocessor.kafka;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.logging.log4j.LogManager;
@@ -70,7 +71,7 @@ public class ConsumerThread implements Runnable {
 	public void run() {
 
 		while (!this.isStopped) {
-			String[] records = this.consumer.poll(Duration.ofMillis(100));
+			final List<String> records = this.consumer.poll(Duration.ofMillis(100));
 			for (String record : records) {
 				this.logger.trace("value: {}", record);
 				input.process(record);

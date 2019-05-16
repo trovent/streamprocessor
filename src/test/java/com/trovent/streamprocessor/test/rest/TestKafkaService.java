@@ -82,7 +82,7 @@ public class TestKafkaService {
 
 		ArrayList<ConsumerListEntry> consumers = response.readEntity(new GenericType<ArrayList<ConsumerListEntry>>() {
 		});
-		assertEquals(1, consumers.size());
+		int countConsumers = consumers.size();
 
 		TSPEngine.create().addEPLSchema(schemaTwo);
 		ConsumerConnector cc = new ConsumerConnector("input", schemaTwo.name);
@@ -92,14 +92,14 @@ public class TestKafkaService {
 		assertEquals(200, response.getStatus());
 		consumers = response.readEntity(new GenericType<ArrayList<ConsumerListEntry>>() {
 		});
-		assertEquals(2, consumers.size());
+		assertEquals(countConsumers + 1, consumers.size());
 
 		controller.disconnectConsumer(id);
 		response = target.path("api/consumers").request().get();
 		assertEquals(200, response.getStatus());
 		consumers = response.readEntity(new GenericType<ArrayList<ConsumerListEntry>>() {
 		});
-		assertEquals(1, consumers.size());
+		assertEquals(countConsumers, consumers.size());
 	}
 
 	@Test
@@ -109,7 +109,7 @@ public class TestKafkaService {
 
 		ArrayList<ProducerListEntry> producers = response.readEntity(new GenericType<ArrayList<ProducerListEntry>>() {
 		});
-		assertEquals(1, producers.size());
+		int countProducers = producers.size();
 
 		TSPEngine.create().addEPLSchema(schemaTwo);
 		TSPEngine.create().addEPLStatement(stmtTwo);
@@ -120,19 +120,21 @@ public class TestKafkaService {
 		assertEquals(200, response.getStatus());
 		producers = response.readEntity(new GenericType<ArrayList<ProducerListEntry>>() {
 		});
-		assertEquals(2, producers.size());
+		assertEquals(countProducers + 1, producers.size());
 
 		controller.disconnectProducer(id);
 		response = target.path("api/producers").request().get();
 		assertEquals(200, response.getStatus());
 		producers = response.readEntity(new GenericType<ArrayList<ProducerListEntry>>() {
 		});
-		assertEquals(1, producers.size());
+		assertEquals(countProducers, producers.size());
 
 	}
 
 	@Test
 	void addConsumer() {
+		int countConsumers = controller.getConsumers().size();
+
 		ConsumerConnector cc = new ConsumerConnector("input", defaultSchema.name);
 		Response response = target.path("api/consumer").request().post(Entity.entity(cc, MediaType.APPLICATION_JSON));
 
@@ -140,7 +142,7 @@ public class TestKafkaService {
 		int id = response.readEntity(Integer.class);
 		assertNotEquals(0, id);
 
-		assertEquals(1, controller.getConsumers().size());
+		assertEquals(countConsumers + 1, controller.getConsumers().size());
 
 		ConsumerConnector cc2 = controller.getConsumers().get(id);
 		assertEquals(cc.topic, cc2.topic);
@@ -149,6 +151,7 @@ public class TestKafkaService {
 
 	@Test
 	void addProducer() {
+		int countProducers = controller.getProducers().size();
 		ProducerConnector pc = new ProducerConnector("input", defaultStatement.name);
 		Response response = target.path("api/producer").request().post(Entity.entity(pc, MediaType.APPLICATION_JSON));
 
@@ -156,7 +159,7 @@ public class TestKafkaService {
 		int id = response.readEntity(Integer.class);
 		assertNotEquals(0, id);
 
-		assertEquals(1, controller.getProducers().size());
+		assertEquals(countProducers + 1, controller.getProducers().size());
 
 		ProducerConnector pc2 = controller.getProducers().get(id);
 		assertEquals(pc.topic, pc2.topic);

@@ -30,10 +30,12 @@ public class KafkaService {
 		}
 	}
 
-	// [ { "id" : <id>, { "topic" : "mytopic", "schema" : "myeventname" }
-	// },
-	// ... ]
-	// return: List<ConsumerListEntry>
+	/*
+	 * [ { "id" : <id>, "connector" : { "topic" : "mytopic", "schema" :
+	 * "myeventname" } }, ... ]
+	 * 
+	 * return: List<ConsumerListEntry>
+	 */
 	@GET
 	@Path("consumers")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -43,20 +45,28 @@ public class KafkaService {
 
 		// Transform into JSON compatible format
 		ArrayList<ConsumerListEntry> consumerList = new ArrayList<ConsumerListEntry>();
-		connectors.forEach((id, value) -> consumerList.add(new ConsumerListEntry(id, value)));
+		connectors.forEach((id, connector) -> consumerList.add(new ConsumerListEntry(id, connector)));
 
 		Response response = Response.status(200).entity(consumerList).build();
 
 		return response;
 	}
 
-	// return: Map<int, ProducerConnector>
+	// return: List<ProducerListEntry>
 	@GET
 	@Path("producers")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getProducers() {
 
-		return Response.status(404).build();
+		Map<Integer, ProducerConnector> producers = connectorController.getProducers();
+
+		// Transform into JSON compatible format
+		ArrayList<ProducerListEntry> producerList = new ArrayList<>();
+		producers.forEach((id, connector) -> producerList.add(new ProducerListEntry(id, connector)));
+
+		Response response = Response.status(200).entity(producerList).build();
+
+		return response;
 	}
 
 	// { "topic" : "mytopic", "schemaName" : "myeventname" }
@@ -68,7 +78,6 @@ public class KafkaService {
 	public Response addConsumer(ConsumerConnector connector) {
 
 		int hashCode = connectorController.connect(connector);
-
 		return Response.status(200).entity(hashCode).build();
 	}
 
@@ -81,7 +90,6 @@ public class KafkaService {
 	public Response addProducer(ProducerConnector connector) {
 
 		int hashCode = connectorController.connect(connector);
-
 		return Response.status(200).entity(hashCode).build();
 	}
 
@@ -89,20 +97,20 @@ public class KafkaService {
 	@Path("consumer/{id}")
 	public Response deleteConsumer(@PathParam("id") int id) {
 
-		System.out.println("DELETE consumer " + id);
-		connectorController.disconnect(id);
-
-		return Response.status(200).build();
+		if (connectorController.disconnectConsumer(id)) {
+			return Response.status(200).build();
+		}
+		return Response.status(404).build();
 	}
 
 	@DELETE
 	@Path("producer/{id}")
 	public Response deleteProducer(@PathParam("id") int id) {
 
-		System.out.println("DELETE producer " + id);
-		connectorController.disconnect(id);
-
-		return Response.status(200).build();
+		if (connectorController.disconnectProducer(id)) {
+			return Response.status(200).build();
+		}
+		return Response.status(404).build();
 	}
 
 }

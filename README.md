@@ -1,4 +1,4 @@
-### TSP - Trovent Stream Processor ###
+# TSP - Trovent Stream Processor #
 
 Trovent Stream Processor is a Java application that implements a rest api to control an esper engine used for stream processing.
 You can add and remove schemas and statements to the engine via rest api calls.

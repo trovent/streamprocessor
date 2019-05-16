@@ -2,17 +2,17 @@ package com.trovent.streamprocessor.restapi;
 
 /**
  * Entity class that is a template for the JSON object returned by GET
- * api/consumers
+ * api/producers
  */
-public class ConsumerListEntry {
+public class ProducerListEntry {
 
 	public int id;
-	public ConsumerConnector connector;
+	public ProducerConnector connector;
 
-	ConsumerListEntry() {
+	ProducerListEntry() {
 	}
 
-	ConsumerListEntry(int id, ConsumerConnector connector) {
+	ProducerListEntry(int id, ProducerConnector connector) {
 		this.id = id;
 		this.connector = connector;
 	}

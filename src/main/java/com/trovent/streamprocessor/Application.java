@@ -2,26 +2,15 @@ package com.trovent.streamprocessor;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.espertech.esper.client.EventBean;
-import com.espertech.esper.client.UpdateListener;
-import com.trovent.streamprocessor.esper.TSPEngine;
-import com.trovent.streamprocessor.kafka.InputProcessor;
-import com.trovent.streamprocessor.kafka.KafkaManager;
-import com.trovent.streamprocessor.kafka.TSPKafkaProducer;
 import com.trovent.streamprocessor.restapi.ApplicationServer;
 
 public class Application {
 
 	private Logger logger;
-	private TSPEngine engine = TSPEngine.create();
-
-	private KafkaManager kafkaManager;
 
 	final private String defaultConfigFile = "app.properties";
 
@@ -60,21 +49,12 @@ public class Application {
 			config.readConfigFile(defaultConfigFile);
 		}
 
-		this.logger.info("creating KafkaManager");
-		this.kafkaManager = new KafkaManager();
-
 		this.logger.trace("init() done");
 	}
 
 	private void run() {
 		this.logger.trace("entering run()");
 		this.logger.info("starting Trovent Stream Processor");
-
-		/*
-		 * init and start esper engine test connection to kafka start application server
-		 */
-		this.engine.init();
-		createKafkaConsumerDemo();
 
 		ApplicationServer server = new ApplicationServer(this.config);
 		server.start();
@@ -98,57 +78,5 @@ public class Application {
 		Application app = new Application();
 		app.init(args);
 		app.run();
-	}
-
-	private void createKafkaConsumerDemo() {
-
-		// topic where to read from
-		String topic = "syslog";
-		// event/schema where to write to
-		String eventName = "SyslogEvent";
-
-		Map<String, String> syslogEvent = new HashMap<String, String>();
-		syslogEvent.put("syslog_timestamp", "string");
-		syslogEvent.put("syslog_app", "string");
-		syslogEvent.put("syslog_message", "string");
-		syslogEvent.put("syslog_pid", "int");
-
-		this.engine.addEPLSchema(eventName, syslogEvent);
-
-		// statement that processes the incoming events
-		String statement = "select syslog_timestamp, syslog_app, syslog_message, count(*) from " + eventName
-				+ "#time(60)";
-		String statementName = "stmtSyslog";
-
-		this.engine.addEPLStatement(statement, statementName);
-
-		// connect event/schema with Kafka topic
-		InputProcessor input = new JSONInputProcessor(this.engine, eventName);
-		this.kafkaManager.createConsumerThread(topic, input);
-
-		// define Listener that outputs the events from the statement
-		class MyListener implements UpdateListener {
-
-			TSPKafkaProducer kafkaProducer;
-
-			MyListener(TSPKafkaProducer producer) {
-				this.kafkaProducer = producer;
-			}
-
-			@Override
-			public void update(EventBean[] newEvents, EventBean[] oldEvents) {
-				for (EventBean eb : newEvents) {
-					logger.info("{} {} {}  count:{}", eb.get("syslog_timestamp"), eb.get("syslog_app"),
-							eb.get("syslog_message"), eb.get("count(*)"));
-
-					this.kafkaProducer.send(String.format("%s %s %s %d", eb.get("syslog_timestamp"),
-							eb.get("syslog_app"), eb.get("syslog_message"), eb.get("count(*)")));
-				}
-			}
-		}
-
-		this.engine.getEPServiceProvider().getEPAdministrator().getStatement(statementName)
-				.addListener(new MyListener(this.kafkaManager.createProducer("output")));
-
 	}
 }

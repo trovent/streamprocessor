@@ -31,6 +31,7 @@ public class EplEvent {
 		return jackson.readValue(jsonString, EplEvent.class);
 	}
 
+	@SuppressWarnings("unchecked")
 	public void dataFromJson(String jsonString) throws JsonParseException, JsonMappingException, IOException {
 		ObjectMapper jackson = new ObjectMapper();
 		this.data = jackson.readValue(jsonString, this.data.getClass());

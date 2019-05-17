@@ -1,7 +1,7 @@
 #!/bin/bash
 
-
-DATA=' { "name" : "Kirk", "age" :42 , "isEmployed" : true, "rating" : 0.7  } '
+DEFAULT_DATA=' { "name" : "Kirk", "age" :42 , "isEmployed" : true, "rating" : 0.7  } '
+DATA=${1:-$DEFAULT_DATA}
 
 CONTAINER="streamprocessor_kafka_1"
 

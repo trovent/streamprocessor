@@ -30,7 +30,7 @@ Now start Trovent Stream Processer:
 
 After that you have to add some definitions to it (schema, statement and connection to topics):
 
-	$ ./demorest/add_demo_definitions.sh
+	$ ./restdemo/add_demo_definitions.sh
 	
 Run a console consumer to watch the output channel of kafka:
 
@@ -38,7 +38,7 @@ Run a console consumer to watch the output channel of kafka:
 	
 Now feed kafka with input:
 
-	$ ./demorest/send.sh
+	$ ./restdemo/send.sh
 	
 Feel free to change the data that is sent and modify or add statements!
 

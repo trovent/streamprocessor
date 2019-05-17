@@ -11,7 +11,7 @@ import com.trovent.streamprocessor.Configuration;
 
 public class ApplicationServer {
 
-	public static final String BASE_URI = "http://localhost:8080/";
+	public static final String BASE_URI = "http://0.0.0.0:8080/";
 
 	private HttpServer httpServer;
 

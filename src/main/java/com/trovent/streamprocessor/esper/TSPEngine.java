@@ -2,8 +2,9 @@ package com.trovent.streamprocessor.esper;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.espertech.esper.client.ConfigurationException;
@@ -79,7 +80,7 @@ public class TSPEngine {
 	 * @param statementName a (preferably) unique Name which will later be used to
 	 *                      identify the Statement
 	 * @return The actual given name of the new Statement. This can diverge from the
-	 *         input, as in case of a Statement with this name already existing a
+	 *         input, as in case of a Statement with an already existing name a
 	 *         suffix is appended to preserve uniqueness
 	 * @throws EPException when the expression was not valid
 	 */
@@ -89,6 +90,21 @@ public class TSPEngine {
 		eplStatement = epService.getEPAdministrator().createEPL(statement, statementName);
 
 		return eplStatement.getName();
+	}
+
+	/**
+	 * Creates a new EsperStatement and an identifying name
+	 * 
+	 * @param statement a EplStatement object which will be used to select certain
+	 *                  types of event
+	 * @return The actual given name of the new Statement. This can diverge from the
+	 *         input, as in case of a Statement with an already existing name a
+	 *         suffix is appended to preserve uniqueness
+	 * @throws EPException when the expression was not valid
+	 */
+	public String addEPLStatement(EplStatement statement) throws EPException {
+
+		return this.addEPLStatement(statement.expression, statement.name);
 	}
 
 	/**
@@ -143,19 +159,22 @@ public class TSPEngine {
 	}
 
 	/**
-	 * returns a Map, with the statement names as key and the expression as content
+	 * Returns a List of EplStatements
 	 * 
 	 * @return
 	 */
-	public Map<String, String> getStatements() {
-		String[] statementNames = getStatementNames();
-		Map<String, String> statements = new LinkedHashMap<String, String>();
-
-		for (String s : statementNames) {
-			statements.put(s, epService.getEPAdministrator().getStatement(s).getText());
+	public List<EplStatement> getStatements() {
+		List<EplStatement> statements = new ArrayList<EplStatement>();
+		for (String sName : epService.getEPAdministrator().getStatementNames()) {
+			statements.add(new EplStatement(epService.getEPAdministrator().getStatement(sName)));
 		}
-
 		return statements;
+	}
+
+	public EplStatement getStatement(String statementName) {
+		EplStatement stmnt = new EplStatement(epService.getEPAdministrator().getStatement(statementName));
+		return stmnt;
+
 	}
 
 	/**
@@ -203,6 +222,20 @@ public class TSPEngine {
 	}
 
 	/**
+	 * Removes the given UpdateListener from a statement defined by name
+	 * 
+	 * @param statementName name of the statement the listener will attach to
+	 * @param listener      the Listener that will be removed
+	 */
+	public void removeListener(String statementName, UpdateListener listener) {
+		if (epService.getEPAdministrator().getStatement(statementName) != null) {
+			epService.getEPAdministrator().getStatement(statementName).removeListener(listener);
+		} else {
+			throw new EPException(String.format("there is no statement with the name '%s'", statementName));
+		}
+	}
+
+	/**
 	 * TODO improve explanation for map
 	 * 
 	 * @param name
@@ -231,6 +264,14 @@ public class TSPEngine {
 		this.epService.getEPAdministrator().getConfiguration().addEventType(name, ev);
 	}
 
+	/**
+	 * Adds a new Schema using two Arrays to identify properties
+	 * 
+	 * @param name
+	 * @param propNames
+	 * @param propTypeNames
+	 * @throws EPException
+	 */
 	public void addEPLSchema(String name, String[] propNames, String[] propTypeNames) throws EPException {
 		/*
 		 * propNames: [ "name", "age ] propTypeNames : [ "string", "integer" ]
@@ -251,6 +292,15 @@ public class TSPEngine {
 		}
 
 		this.epService.getEPAdministrator().getConfiguration().addEventType(name, propNames, propTypes);
+	}
+
+	/**
+	 * Adds a new Schema using a EplSchema object
+	 * 
+	 * @param schema
+	 */
+	public void addEPLSchema(EplSchema schema) {
+		this.addEPLSchema(schema.name, schema.fields);
 	}
 
 	/**
@@ -288,23 +338,38 @@ public class TSPEngine {
 	 * @param eventTypeName
 	 * @return
 	 */
-	public EventType getEPLSchema(String eventTypeName) {
+	public EplSchema getEPLSchema(String eventTypeName) {
+		EventType lookupType = epService.getEPAdministrator().getConfiguration().getEventType(eventTypeName);
+		if (lookupType != null) {
+			return new EplSchema(lookupType);
+		} else {
+			throw new EPException(String.format("EventType with the Name '%s' does not exist", eventTypeName));
+		}
+	}
+
+	public EventType getEventType(String eventTypeName) {
 		EventType lookupType = epService.getEPAdministrator().getConfiguration().getEventType(eventTypeName);
 		if (lookupType != null) {
 			return lookupType;
 		} else {
 			throw new EPException(String.format("EventType with the Name '%s' does not exist", eventTypeName));
 		}
-
 	}
 
 	/**
-	 * Returns all the currently registered EventTypes
+	 * Returns a List of all currently available EventTypes/Schemas
 	 * 
 	 * @return
 	 */
-	public EventType[] getEPLSchemas() {
-		return epService.getEPAdministrator().getConfiguration().getEventTypes();
+	public List<EplSchema> getEPLSchemas() {
+		EventType[] all = epService.getEPAdministrator().getConfiguration().getEventTypes();
+		List<EplSchema> schemas = new ArrayList<EplSchema>();
+
+		for (EventType e : all) {
+			schemas.add(new EplSchema(e));
+		}
+
+		return schemas;
 	}
 
 	/**
@@ -314,7 +379,7 @@ public class TSPEngine {
 	 * @param eventTypeName
 	 * @param data          the content of your event as an Array of Objects
 	 */
-	public void sendEPLEvent(String eventTypeName, Object[] data) {
+	public void sendEPLEvent(String eventTypeName, Object[] data) throws EPException {
 		// Event: { dataA; dataB; dataC; ... }
 		// EventType eventType = this.eventTypes.get(eventTypeName);
 
@@ -328,12 +393,23 @@ public class TSPEngine {
 	 * @param eventTypeName
 	 * @param data          the content of your event as a Map
 	 */
-	public void sendEPLEvent(String eventTypeName, Map<?, ?> data) {
+	public void sendEPLEvent(String eventTypeName, Map<String, Object> data) {
 		// Event: { dataA; dataB; dataC; ... }
 		// EventType eventType = this.eventTypes.get(eventTypeName);
 
 		epService.getEPRuntime().sendEvent(data, eventTypeName);
 
+	}
+
+	/**
+	 * standard call to send a given event This function sends a Map-type event
+	 * 
+	 * @param event The EplEvent to be send to the Runtime Engine <br>
+	 *              The event EplEvent class contains both the event name as well as
+	 *              the data
+	 */
+	public void sendEPLEvent(EplEvent event) {
+		epService.getEPRuntime().sendEvent(event.data, event.eventTypeName);
 	}
 
 	/**

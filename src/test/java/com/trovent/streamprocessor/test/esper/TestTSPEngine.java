@@ -1,21 +1,29 @@
 package com.trovent.streamprocessor.test.esper;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.espertech.esper.client.ConfigurationException;
 import com.espertech.esper.client.EPException;
 import com.espertech.esper.client.EPStatementException;
 import com.espertech.esper.client.EventType;
+import com.trovent.streamprocessor.esper.EplSchema;
 import com.trovent.streamprocessor.esper.TSPEngine;
+import com.trovent.streamprocessor.kafka.ProducerListener;
+import com.trovent.streamprocessor.kafka.StringQueueProducer;
 
-import junit.framework.TestCase;
-
-public class TestTSPEngine extends TestCase {
+public class TestTSPEngine {
 
 	private TSPEngine engine;
 
@@ -23,17 +31,15 @@ public class TestTSPEngine extends TestCase {
 		super();
 	}
 
+	@BeforeEach
 	protected void setUp() throws Exception {
-		super.setUp();
-
 		engine = TSPEngine.create();
 		engine.init();
 	}
 
+	@AfterEach
 	protected void tearDown() throws Exception {
-
 		engine.shutdown();
-		super.tearDown();
 	}
 
 	@Test
@@ -77,6 +83,24 @@ public class TestTSPEngine extends TestCase {
 	}
 
 	@Test
+	public void testAddListenerFailed() {
+		final String STATEMENTNAME = "notExisting";
+		assertThrows(EPException.class,
+				() -> engine.addListener(STATEMENTNAME, new ProducerListener(new StringQueueProducer())));
+	}
+
+	@Test
+	public void testAddListener() {
+		final String SCHEMANAME = "createmyschema";
+		final String STATEMENTNAME = "mystatement";
+
+		engine.addEPLStatement("create map schema inputqueue as (name string, age int)", SCHEMANAME);
+		engine.addEPLStatement("select name from inputqueue", STATEMENTNAME);
+
+		engine.addListener(STATEMENTNAME, new ProducerListener(new StringQueueProducer()));
+	}
+
+	@Test
 	public void testSendEPLEventMAP() {
 		String statement;
 		statement = "create map schema SomeMapEventSchema as (first_name string, numbers integer)";
@@ -107,6 +131,62 @@ public class TestTSPEngine extends TestCase {
 		objArrayData[1] = new Integer(42);
 
 		engine.sendEPLEvent("SomeArrayEventSchema", objArrayData);
+	}
+
+	@Test
+	public void testSendEPLEventOBJECTARRAYWithWrongData() {
+		String statement;
+		statement = "create objectarray schema SomeArrayEventSchema as (first_name string, numbers int)";
+		engine.addEPLStatement(statement, "ArraySchema");
+
+		statement = "select numbers as numbers from SomeArrayEventSchema";
+		engine.addEPLStatement(statement, "ArrayStatement");
+
+		// testData as objectarray
+		Object[] objArrayData = new Object[4];
+		objArrayData[0] = new String("Alice");
+		objArrayData[1] = new String("fourty-two");
+		objArrayData[2] = new Long(33);
+		objArrayData[3] = true;
+
+		// TODO reenable this as soon as a fix is found / fix this
+		// assertThrows(EPException.class, () ->
+		// engine.sendEPLEvent("SomeArrayEventSchema", objArrayData));
+	}
+
+	@Test
+	public void testSendEPLEventMAPWithWrongDataName() {
+		String statement;
+		statement = "create map schema SomeMapEventSchema as (first_name string, numbers integer)";
+		engine.addEPLStatement(statement, "MapSchema");
+
+		statement = "select first_name as First_Name from SomeMapEventSchema";
+		engine.addEPLStatement(statement, "MapStatement");
+
+		Map<String, Object> mapData = new HashMap<String, Object>();
+		mapData.put("Bielefeld", 42);
+		mapData.put("first_name", "Alice");
+
+		// TODO reenable this as soon as a fix is found / fix this
+		// assertThrows(EPException.class, () ->
+		// engine.sendEPLEvent("SomeMapEventSchema", mapData));
+	}
+
+	@Test
+	public void testSendEPLEventOBJECTARRAYToWrongEvent() {
+		String statement;
+		statement = "create objectarray schema SomeArrayEventSchema as (first_name string, numbers int)";
+		engine.addEPLStatement(statement, "ArraySchema");
+
+		statement = "select numbers as numbers from SomeArrayEventSchema";
+		engine.addEPLStatement(statement, "ArrayStatement");
+
+		// testData as objectarray
+		Object[] objArrayData = new Object[2];
+		objArrayData[0] = new String("Alice");
+		objArrayData[1] = new Integer(42);
+
+		assertThrows(EPException.class, () -> engine.sendEPLEvent("Bielefeld", objArrayData));
 	}
 
 	@Test
@@ -269,7 +349,7 @@ public class TestTSPEngine extends TestCase {
 	public void testGetEPLSchema() {
 		this.testAddEPLSchemaAllowedEntries();
 		String eventTypeName = "TestEventSchema"; // from a
-		assertEquals(eventTypeName, (engine.getEPLSchema(eventTypeName).getName()));
+		assertEquals(eventTypeName, (engine.getEPLSchema(eventTypeName).name));
 
 		String statement;
 		String statementName = "StatementMadeSchema";
@@ -278,12 +358,28 @@ public class TestTSPEngine extends TestCase {
 		statement = "create objectarray schema " + eventTypeName + " as (first_name string, numbers integer)";
 		engine.addEPLStatement(statement, statementName);
 
-		assertEquals(eventTypeName, (engine.getEPLSchema(eventTypeName).getName()));
+		assertEquals(eventTypeName, (engine.getEPLSchema(eventTypeName).name));
 	}
 
 	@Test
 	public void testGetEPLSchemaForNonexistantEventType() {
 		assertThrows(EPException.class, () -> engine.getEPLSchema("Bielefeld"));
+	}
+
+	@Test
+	public void testGetEPLSchemas() {
+		final String SCHEMANAME = "createmyschema";
+
+		Map<String, String> newEventType = new HashMap<String, String>();
+
+		newEventType.put("myString", "string");
+		newEventType.put("myinteger", "integer");
+		newEventType.put("myinteger2", "int");
+
+		engine.addEPLSchema(SCHEMANAME, newEventType);
+		List<EplSchema> schemalist = engine.getEPLSchemas();
+
+		assertEquals(SCHEMANAME, schemalist.get(0).name);
 	}
 
 }

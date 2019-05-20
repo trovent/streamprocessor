@@ -20,11 +20,11 @@ services:
     ports:
       - "2181:2181"
 
-
   kafka:
     image: wurstmeister/kafka
     expose:
       - "9092"
+      - "29092"
     ports:
       - "29092:29092"
     depends_on:
@@ -40,4 +40,17 @@ services:
       # zookeeper to connect to
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_CREATE_TOPICS: "input:1:1, output:1:1, syslog:1:1, netflow:1:1"
+      
+  tsp:
+    build:
+      context: ./tsp
+    image: streamprocessor/tsp
+    expose:
+      - "8080"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - kafka
+    tty: true
+    stdin_open: true
  

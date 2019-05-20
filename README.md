@@ -20,13 +20,9 @@ Additionally it can be directly connected to a running kafka instance to read da
 ### Creating a demonstration environment
 
 To make TSP fully usable you have to run a kafka instance that TSP can connect to.
-A docker container running kafka can be started executing
+A docker container running TSP and Kafka can be started executing
 
-	$ docker-compose up -d kafka
-	
-Now start Trovent Stream Processer:
-
-	$ mvn exec:java
+	$ docker-compose up -d tsp
 
 After that you have to add some definitions to it (schema, statement and connection to topics):
 

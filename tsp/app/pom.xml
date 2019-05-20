@@ -66,6 +66,7 @@
   	</dependency>
   </dependencies>
   <build>
+  	<finalName>tsp</finalName>
   	<plugins>
   		<plugin>
   			<groupId>org.codehaus.mojo</groupId>
@@ -86,6 +87,20 @@
 			<groupId>org.apache.maven.plugins</groupId>
 			<artifactId>maven-surefire-plugin</artifactId>
 			<version>3.0.0-M3</version>
+		</plugin>
+		<plugin>
+			<artifactId>maven-assembly-plugin</artifactId>
+			<configuration>
+				<archive>
+					<manifest>
+						<mainClass>com.trovent.streamprocessor.Application</mainClass>
+					</manifest>
+				</archive>
+				<appendAssemblyId>false</appendAssemblyId> <!-- To avoid descriptor in executor jar name -->
+				<descriptorRefs>
+					<descriptorRef>jar-with-dependencies</descriptorRef>
+				</descriptorRefs>
+			</configuration>
 		</plugin>
   	</plugins>
   </build>

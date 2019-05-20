@@ -1,5 +1,5 @@
-/target/
+target/
 /doc/
-/.classpath
-/.project
-/.settings/
+.classpath
+.project
+.settings/

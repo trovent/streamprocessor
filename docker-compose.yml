@@ -20,11 +20,11 @@ services:
     ports:
       - "2181:2181"
 
-
   kafka:
     image: wurstmeister/kafka
     expose:
       - "9092"
+      - "29092"
     ports:
       - "29092:29092"
     depends_on:

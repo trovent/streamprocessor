@@ -15,8 +15,12 @@ Additionally it can be directly connected to a running kafka instance to read da
 ##### How to run application
 
 	$ mvn exec:java
-	
-	
+
+When you want to use a configuration file of your own you can provide it with a command line switch:
+
+    $ mvn exec:jaca exec -Dexec.args="-c app.local.properties"
+
+
 ### Creating a demonstration environment
 
 To make TSP fully usable you have to run a kafka instance that TSP can connect to.

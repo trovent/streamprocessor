@@ -1,7 +1,5 @@
 package com.trovent.streamprocessor.kafka;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -20,24 +18,27 @@ public class KafkaManager {
 
 	public KafkaManager() {
 
-		this.init();
+		this.init(null);
 	}
 
-	public void init() {
+	public KafkaManager(Properties props) {
+
+		this.init(props);
+	}
+
+	public void init(Properties properties) {
 
 		this.logger = LogManager.getLogger();
-		this.props = new Properties();
 
-		try {
-			InputStream instream = this.getClass().getClassLoader().getResourceAsStream(CONFIGFILE);
-			if (instream == null) {
-				throw new IOException("Kafka config file not found");
-			}
-			props.load(instream);
-			logger.info("loaded kafka config from {}:", CONFIGFILE);
-		} catch (IOException e) {
-			logger.warn("No kafka.properties file found. Using default config:");
-			props.put("bootstrap.servers", "localhost:29092");
+		// use given props
+		this.props = properties;
+
+		// if no props given...
+		if (this.props == null) {
+			this.props = new Properties();
+			// or use default config
+			logger.warn("No kafka properties given! Setting some default values");
+			props.put("bootstrap.servers", "localhost:9092");
 			props.put("group.id", "test");
 			props.put("enable.auto.commit", "true");
 			props.put("auto.commit.interval.ms", "1000");
@@ -46,8 +47,7 @@ public class KafkaManager {
 			props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
 			props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
 		}
-
-		props.forEach((key, value) -> {
+		this.props.forEach((key, value) -> {
 			logger.info("    {} : {}", key, value);
 		});
 

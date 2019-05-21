@@ -13,6 +13,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.trovent.streamprocessor.Application;
 import com.trovent.streamprocessor.esper.TSPEngine;
 import com.trovent.streamprocessor.kafka.ConnectorController;
 import com.trovent.streamprocessor.kafka.KafkaManager;
@@ -25,7 +26,13 @@ public class KafkaService {
 	public KafkaService() {
 		if (connectorController == null) {
 			TSPEngine engine = TSPEngine.create();
-			KafkaManager kafkaManager = new KafkaManager();
+			KafkaManager kafkaManager = null;
+			Application app = Application.getInstance();
+			if (app.getConfig() != null) {
+				kafkaManager = new KafkaManager(app.getConfig().getProperties());
+			} else {
+				kafkaManager = new KafkaManager();
+			}
 			connectorController = ConnectorController.create(engine, kafkaManager);
 		}
 	}

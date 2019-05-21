@@ -18,15 +18,19 @@ Additionally it can be directly connected to a running kafka instance to read da
 
 When you want to use a configuration file of your own you can provide it with a command line switch:
 
-    $ mvn exec:jaca exec -Dexec.args="-c app.local.properties"
+    $ mvn exec:java -Dexec.args="-c app.local.properties"
 
 
 ### Creating a demonstration environment
 
 To make TSP fully usable you have to run a kafka instance that TSP can connect to.
-A docker container running TSP and Kafka can be started executing
+A docker container running Kafka can be started executing
 
-	$ docker-compose up -d tsp
+	$ docker-compose up -d kafka
+    
+If you want to run dockerized version of tsp then execute:
+
+    $ docker-compose up -d tsp
 
 After that you have to add some definitions to it (schema, statement and connection to topics):
 

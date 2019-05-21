@@ -1,6 +1,8 @@
 package com.trovent.streamprocessor;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.apache.logging.log4j.LogManager;
@@ -12,9 +14,22 @@ public class Application {
 
 	private Logger logger;
 
-	final private String defaultConfigFile = "app.properties";
+	final private String DEFAULTCONFIGFILE = "app.properties";
 
 	private Configuration config;
+
+	private static Application instance;
+
+	public static Application getInstance() {
+		if (instance == null) {
+			instance = new Application();
+		}
+		return instance;
+	}
+
+	public Configuration getConfig() {
+		return this.config;
+	}
 
 	/**
 	 * Initialise application
@@ -39,14 +54,16 @@ public class Application {
 		if (config.getConfigfile() != null) {
 			this.logger.debug("reading config from: {}", config.getConfigfile());
 			File f = new File(config.getConfigfile());
-			if (!f.exists()) {
+			try {
+				config.readConfigFile(new FileInputStream(f));
+			} catch (FileNotFoundException e) {
 				this.logger.error("config file {} does not exist!", config.getConfigfile());
 				// read default properties file
-				config.readConfigFile(defaultConfigFile);
+				config.readConfigFile(this.getClass().getClassLoader().getResourceAsStream(DEFAULTCONFIGFILE));
 			}
 		} else {
 			// read default properties file
-			config.readConfigFile(defaultConfigFile);
+			config.readConfigFile(this.getClass().getClassLoader().getResourceAsStream(DEFAULTCONFIGFILE));
 		}
 
 		this.logger.trace("init() done");
@@ -75,7 +92,7 @@ public class Application {
 	}
 
 	public static void main(String[] args) throws IOException {
-		Application app = new Application();
+		Application app = Application.getInstance();
 		app.init(args);
 		app.run();
 	}

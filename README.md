@@ -4,21 +4,25 @@ Trovent Stream Processor is a Java application that implements a rest api to con
 You can add and remove schemas and statements to the engine via rest api calls.
 Additionally it can be directly connected to a running kafka instance to read data from a topic as a consumer and write into another topic as a producer.
 
+##### Prerequisites to run it locally
+
+Move to the directory which contains Maven parent project - `streamprocessor/tsp/app`
+
 ##### How to compile
 
-	$ mvn compile
+	$ ./mvnw compile
 	
 ##### How to run tests
 
-	$ mvn verify
+	$ ./mvnw verify
 	
 ##### How to run application
 
-	$ mvn exec:java
+	$ ./mvnw -pl webapp spring-boot:run
 
 When you want to use a configuration file of your own you can provide it with a command line switch:
 
-    $ mvn exec:java -Dexec.args="-c app.local.properties"
+    $ ./mvnw -pl webapp spring-boot:run -Dspring-boot.run.arguments=--kafka.configFileLocation=app.local.properties
 
 
 ### Creating a demonstration environment

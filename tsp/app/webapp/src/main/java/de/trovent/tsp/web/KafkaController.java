@@ -26,20 +26,21 @@ import com.trovent.streamprocessor.restapi.ProducerConnector;
 import com.trovent.streamprocessor.restapi.ProducerListEntry;
 
 import de.trovent.tsp.web.dto.AppStatus;
+import io.swagger.annotations.ApiOperation;
 
 @RestController
 @RequestMapping(value = "kafka")
 public class KafkaController {
-	
-	@Value( "${kafka.configFileLocation:}" )
+
+	@Value("${kafka.configFileLocation:}")
 	private String kafkaConfigFileLocation;
-	
+
 	private Logger logger = LogManager.getLogger();
 
 	private ConnectorController connectorController;
-	
+
 	@PostConstruct
-	public void init(){
+	public void init() {
 		if (connectorController == null) {
 			TSPEngine engine = TSPEngine.create();
 			KafkaManager kafkaManager = null;
@@ -50,21 +51,17 @@ public class KafkaController {
 			connectorController = ConnectorController.create(engine, kafkaManager);
 		}
 	}
-	
-	@RequestMapping(
-			value="status", 
-			method = RequestMethod.GET, 
-			headers = "Accept=application/json")
+
+	@ApiOperation(value = "Get status of KafkaController component")
+	@RequestMapping(value = "status", method = RequestMethod.GET, headers = "Accept=application/json")
 	public AppStatus status() {
 		logger.info("Getting status of the Kafka Rest Controller");
 		return new AppStatus("Kafka", "OK");
 	}
 
-	@RequestMapping(
-			value = "consumers", 
-			method = RequestMethod.GET, 
-			headers = "Accept=application/json")
-	@ResponseStatus(value=HttpStatus.OK)
+	@ApiOperation(value = "Get list of all consumers")
+	@RequestMapping(value = "consumers", method = RequestMethod.GET, headers = "Accept=application/json")
+	@ResponseStatus(value = HttpStatus.OK)
 	public List<ConsumerListEntry> getConsumers() {
 
 		Map<Integer, ConsumerConnector> connectors = connectorController.getConsumers();
@@ -76,11 +73,9 @@ public class KafkaController {
 		return consumerList;
 	}
 
-	@RequestMapping(
-			value = "producers", 
-			method = RequestMethod.GET, 
-			headers = "Accept=application/json")
-	@ResponseStatus(value=HttpStatus.OK)
+	@ApiOperation(value = "Get list of all producers")
+	@RequestMapping(value = "producers", method = RequestMethod.GET, headers = "Accept=application/json")
+	@ResponseStatus(value = HttpStatus.OK)
 	public List<ProducerListEntry> getProducers() {
 
 		Map<Integer, ProducerConnector> producers = connectorController.getProducers();
@@ -92,38 +87,30 @@ public class KafkaController {
 		return producerList;
 	}
 
-	@RequestMapping(
-			value = "consumer", 
-			method = RequestMethod.POST, 
-			headers = "Accept=application/json")
+	@ApiOperation(value = "Add connection between kafka consumer and esper schema/event")
+	@RequestMapping(value = "consumer", method = RequestMethod.POST, headers = "Accept=application/json")
 	public int addConsumer(@RequestBody ConsumerConnector connector) {
 		return connectorController.connect(connector);
 	}
 
-	@RequestMapping(
-			value = "producer", 
-			method = RequestMethod.POST, 
-			headers = "Accept=application/json")
+	@ApiOperation(value = "Add connection between kafka producer and esper statement")
+	@RequestMapping(value = "producer", method = RequestMethod.POST, headers = "Accept=application/json")
 	public int addProducer(@RequestBody ProducerConnector connector) {
 		return connectorController.connect(connector);
 	}
 
-	@RequestMapping(
-			value = "consumer/{id}", 
-			method = RequestMethod.DELETE, 
-			headers = "Accept=application/json")
-	@ResponseStatus(value=HttpStatus.NO_CONTENT)
+	@ApiOperation(value = "Get definition of a consumer given by id")
+	@RequestMapping(value = "consumer/{id}", method = RequestMethod.DELETE, headers = "Accept=application/json")
+	@ResponseStatus(value = HttpStatus.NO_CONTENT)
 	public void deleteConsumer(@PathVariable("id") int id) {
 		if (!connectorController.disconnectConsumer(id)) {
 			throw new IllegalArgumentException();
 		}
 	}
 
-	@RequestMapping(
-			value = "producer/{id}", 
-			method = RequestMethod.DELETE, 
-			headers = "Accept=application/json")
-	@ResponseStatus(value=HttpStatus.NO_CONTENT)
+	@ApiOperation(value = "Get definition of a producer given by id")
+	@RequestMapping(value = "producer/{id}", method = RequestMethod.DELETE, headers = "Accept=application/json")
+	@ResponseStatus(value = HttpStatus.NO_CONTENT)
 	public void deleteProducer(@PathVariable("id") int id) {
 		if (!connectorController.disconnectProducer(id)) {
 			throw new IllegalArgumentException();

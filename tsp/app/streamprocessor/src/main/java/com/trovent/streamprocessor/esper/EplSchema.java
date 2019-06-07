@@ -4,8 +4,15 @@ import java.util.LinkedHashMap;
 
 import com.espertech.esper.client.EventType;
 
+import io.swagger.annotations.ApiModelProperty;
+
 public class EplSchema {
+
+	@ApiModelProperty(notes = "Name of the esper schema", example = "syslog")
 	public String name;
+
+	@ApiModelProperty(notes = "Definition of the esper schema", example = "{ " + "\"hostname\" : \"string\", "
+			+ "\"appname\" : \"string\", " + "\"pid\" : \"integer\", " + "\"message\" : \"string\" " + "}")
 	public LinkedHashMap<String, String> fields;
 
 	/**

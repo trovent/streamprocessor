@@ -8,8 +8,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.swagger.annotations.ApiModelProperty;
+
 public class EplEvent {
+
+	@ApiModelProperty(notes = "Name of the schema/event type", example = "syslog")
 	public String eventTypeName;
+
+	@ApiModelProperty(notes = "Data of the event given as key value map", example = " { \"appname\" : \"nginx\", \"hostname\" : \"web.example.com\", \"pid\" : 723, \"message\" : \"Request from host 1.2.3.4 GET /index.html\" } ")
 	public LinkedHashMap<String, Object> data;
 
 	public EplEvent() {

@@ -2,6 +2,8 @@ package com.trovent.streamprocessor.esper;
 
 import com.espertech.esper.client.EPStatement;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * Entity class for epl statement data
  * 
@@ -9,7 +11,11 @@ import com.espertech.esper.client.EPStatement;
  *
  */
 public class EplStatement {
+
+	@ApiModelProperty(notes = "Name of the esper statement", example = "ntp_filter")
 	public String name;
+
+	@ApiModelProperty(notes = "Expression of the esper statement", example = "select * from netflow where dest_port=123")
 	public String expression;
 
 	/**

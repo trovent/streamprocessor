@@ -1,0 +1,113 @@
+<project 
+	xmlns="http://maven.apache.org/POM/4.0.0" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.trovent</groupId>
+		<artifactId>eagle-tsp-parent</artifactId>
+		<version>0.0.1</version>
+	</parent>
+	
+  <!-- <groupId>com.trovent</groupId> -->
+  <artifactId>streamprocessor</artifactId>
+  <!-- <version>0.0.1</version> -->
+  <name>Trovent Stream Processor</name>
+  <description>Stream Processor using Esper engine configurable by REST-API</description>
+  <packaging>jar</packaging>
+
+  <properties>
+  	<maven.compiler.target>1.8</maven.compiler.target>
+  	<maven.compiler.source>1.8</maven.compiler.source>
+  	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <dependencies>
+
+  	<dependency>
+  		<groupId>org.kohsuke.args4j</groupId>
+  		<artifactId>args4j-maven-plugin</artifactId>
+  		<version>2.33</version>
+  		<type>maven-plugin</type>
+  	</dependency>
+
+  	<dependency>
+  		<groupId>org.apache.logging.log4j</groupId>
+  		<artifactId>log4j-api</artifactId>
+  		<version>2.11.2</version>
+  	</dependency>
+
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+        <version>5.2.0</version>
+    </dependency>
+
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-engine</artifactId>
+        <version>5.2.0</version>
+    </dependency>
+
+  	<dependency>
+  		<groupId>org.apache.logging.log4j</groupId>
+  		<artifactId>log4j-core</artifactId>
+  		<version>2.11.2</version>
+  	</dependency>
+
+  	<dependency>
+  		<groupId>org.glassfish.jersey.containers</groupId>
+  		<artifactId>jersey-container-grizzly2-http</artifactId>
+  		<version>2.28</version>
+  	</dependency>
+
+  	<dependency>
+  		<groupId>org.glassfish.jersey.inject</groupId>
+  		<artifactId>jersey-hk2</artifactId>
+  		<version>2.28</version>
+		</dependency>
+
+  	<dependency>
+  		<groupId>com.espertech</groupId>
+  		<artifactId>esper</artifactId>
+  		<version>7.1.0</version>
+  	</dependency>
+
+  	<dependency>
+  		<groupId>org.apache.kafka</groupId>
+  		<artifactId>kafka-clients</artifactId>
+  		<version>2.2.0</version>
+  	</dependency>
+
+  	<dependency>
+  		<groupId>org.glassfish.jersey.media</groupId>
+  		<artifactId>jersey-media-json-jackson</artifactId>
+  		<version>2.28</version>
+  	</dependency>
+
+  	<dependency>
+  		<groupId>org.apache.logging.log4j</groupId>
+  		<artifactId>log4j-slf4j-impl</artifactId>
+  		<version>2.11.2</version>
+  	</dependency>
+
+  	<dependency>
+  		<groupId>io.springfox</groupId>
+  		<artifactId>springfox-swagger2</artifactId>
+  		<version>2.9.2</version>
+  	</dependency>
+  </dependencies>
+	
+  <build>
+  	<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.0.0-M3</version>
+			</plugin>
+  	</plugins>
+  </build>
+
+</project>

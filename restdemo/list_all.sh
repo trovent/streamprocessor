@@ -1,13 +1,13 @@
 #!/bin/bash
 
 echo "getting all schemas:"
-curl --silent -XGET http://localhost:8080/api/schemas |jq
+curl --silent -XGET http://localhost:8080/api/esper/schemas |jq
 
 echo "getting all statements:"
-curl --silent -XGET http://localhost:8080/api/statements |jq
+curl --silent -XGET http://localhost:8080/api/esper/statements |jq
 
 echo "getting all consumers:"
-curl --silent -XGET http://localhost:8080/api/consumers |jq
+curl --silent -XGET http://localhost:8080/api/kafka/consumers |jq
 
 echo "getting all producers:"
-curl --silent -XGET http://localhost:8080/api/producers |jq
+curl --silent -XGET http://localhost:8080/api/kafka/producers |jq

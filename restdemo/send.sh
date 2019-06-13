@@ -9,4 +9,6 @@ TOPIC="input"
 
 BROKER="kafka:9092"
 
+echo "sending ${DATA}"
+
 echo "$DATA" | docker exec -i $CONTAINER  kafka-console-producer.sh --topic $TOPIC --broker-list $BROKER

@@ -39,7 +39,7 @@ services:
 
       # zookeeper to connect to
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_CREATE_TOPICS: "input:1:1, output:1:1, syslog:1:1, netflow:1:1"
+      KAFKA_CREATE_TOPICS: "input:1:1, output:1:1, adults:1:1, children:1:1, syslog:1:1, netflow:1:1"
       
   tsp:
     build:

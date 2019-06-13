@@ -1,0 +1,4 @@
+{
+    "name": "ChildFilter",
+    "expression": "select * from Person where age<18"
+}

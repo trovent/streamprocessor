@@ -153,7 +153,8 @@ public class KafkaControllerTests {
 	public void addConsumer() {
 		int countConsumers = controller.getConsumers().size();
 
-		ConsumerConnector cc = new ConsumerConnector("input", defaultSchema.name);
+		final String DATASOURCE = "MyData";
+		ConsumerConnector cc = new ConsumerConnector("input", defaultSchema.name, DATASOURCE);
 		Response response = target.path("kafka/consumer").request().post(Entity.entity(cc, MediaType.APPLICATION_JSON));
 
 		assertEquals(200, response.getStatus());
@@ -165,6 +166,7 @@ public class KafkaControllerTests {
 		ConsumerConnector cc2 = controller.getConsumers().get(id);
 		assertEquals(cc.topic, cc2.topic);
 		assertEquals(cc.schemaName, cc2.schemaName);
+		assertEquals(DATASOURCE, cc2.source);
 	}
 
 	@Test

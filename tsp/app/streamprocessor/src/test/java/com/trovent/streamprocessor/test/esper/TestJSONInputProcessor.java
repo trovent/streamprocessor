@@ -169,4 +169,37 @@ public class TestJSONInputProcessor {
 		// check for 5 field in resulting event
 		assertEquals(10, event.data.keySet().size());
 	}
+
+	@Test
+	public void testProcessInNestedStructure()
+			throws JsonParseException, JsonMappingException, IOException, InterruptedException {
+
+		final String DATAKEY = "MyData";
+
+		JSONInputProcessor input = new JSONInputProcessor(engine, DEFAULT_SCHEMA, DATAKEY);
+
+		// create statement, add to engine
+		final String STMT_NAME = "MyStatement";
+		String stmt = "select *, sum(age), count(*) from " + DEFAULT_SCHEMA;
+		this.engine.addEPLStatement(stmt, STMT_NAME);
+
+		StringQueueProducer producer = new StringQueueProducer();
+		this.engine.addListener(STMT_NAME, new ProducerListener(producer));
+		assertEquals(0, producer.count());
+
+		// create data in JSON format
+		String jsonData = "{ \"key\" : \"myvalue\", \"" + DATAKEY
+				+ "\" : { \"name\" : \"MyName\", \"age\" : 42, \"isAdult\" : true } }";
+		assertTrue(input.process(jsonData));
+
+		// wait for listener
+		while (producer.isEmpty()) {
+			Thread.sleep(10);
+		}
+
+		EplEvent event = EplEvent.fromJson(producer.poll());
+
+		// check for 5 field in resulting event
+		assertEquals(5, event.data.keySet().size());
+	}
 }

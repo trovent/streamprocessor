@@ -20,6 +20,8 @@ abstract public class AbstractInputProcessor implements InputProcessor {
 	protected TSPEngine engine;
 
 	protected EventType eventType;
+	
+	protected String source;
 
 	/**
 	 * Getter for field engine
@@ -61,6 +63,25 @@ abstract public class AbstractInputProcessor implements InputProcessor {
 
 		this.setEventType(eventTypeName);
 	}
+	
+	/**
+	 * Constructor of AbstractInputProcessor
+	 * 
+	 * @param engine        Sets the engine to use for event processing
+	 * 
+	 * @param eventTypeName Sets the event type to use. The incoming data must match
+	 *                      this format.
+	 * @param source		Source key to be used to find data
+	 */
+	public AbstractInputProcessor(TSPEngine engine, String eventTypeName, String source) throws EPException {
+		this.engine = engine;
+		this.logger = LogManager.getLogger();
+
+		logger.info("creating JSONINputProcessor for eventType '{}' and source '{}'", eventTypeName, source);
+
+		this.setEventType(eventTypeName);
+		this.source = source;
+	}
 
 	/**
 	 * Set the event type used by the input processor
@@ -71,6 +92,14 @@ abstract public class AbstractInputProcessor implements InputProcessor {
 	public void setEventType(String eventTypeName) throws EPException {
 		this.eventType = null;
 		this.eventType = this.engine.getEventType(eventTypeName);
+	}
+	
+	public String getSource() {
+		return source;
+	}
+
+	public void setSource(String source) {
+		this.source = source;
 	}
 
 	/**

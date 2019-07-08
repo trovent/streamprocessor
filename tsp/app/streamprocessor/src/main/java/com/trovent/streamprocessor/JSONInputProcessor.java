@@ -1,10 +1,13 @@
 package com.trovent.streamprocessor;
 
 import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import com.espertech.esper.client.EPException;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.trovent.streamprocessor.esper.EplEvent;
 import com.trovent.streamprocessor.esper.TSPEngine;
 
@@ -35,6 +38,19 @@ public class JSONInputProcessor extends AbstractInputProcessor {
 	public JSONInputProcessor(TSPEngine engine, String eventTypeName) throws EPException {
 		super(engine, eventTypeName);
 	}
+	
+	/**
+	 * Constructor of JSONInputProcessor
+	 * 
+	 * @param engine        Sets the engine to use for event processing
+	 * 
+	 * @param eventTypeName Sets the event type to use. The incoming data must match
+	 *                      this format.
+	 * @param source		Key under which data is located
+	 */
+	public JSONInputProcessor(TSPEngine engine, String eventTypeName, String source) throws EPException {
+		super(engine, eventTypeName, source);
+	}
 
 	/**
 	 * Process the incoming data given as json string. The json string is parsed and
@@ -47,6 +63,7 @@ public class JSONInputProcessor extends AbstractInputProcessor {
 	 *              "year" : 2019 }</code>
 	 * @return true if the event was processed successfully, false otherwise
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public Boolean process(String input) {
 
@@ -54,7 +71,15 @@ public class JSONInputProcessor extends AbstractInputProcessor {
 
 		try {
 			EplEvent event = new EplEvent(this.eventType.getName());
-			event.dataFromJson(input);
+			
+			// Check if data needs to be derived from source key
+			if (source == null || source.equals("")) {
+				event.dataFromJson(input);
+			} else {
+				ObjectMapper mapper = new ObjectMapper();
+				Map<String, LinkedHashMap<String, Object>> nestedData = mapper.readValue(input, Map.class);
+				event.data = nestedData.get(source);
+			}
 
 			this.engine.sendEPLEvent(event);
 		} catch (JsonParseException e1) {

@@ -27,9 +27,21 @@ public class CSVInputProcessor extends AbstractInputProcessor {
 	 * Constructor of CSVInputProcessor
 	 * 
 	 * @param engine Sets the engine to use for event processing
+	 * @param eventTypeName name of the event type
 	 */
 	public CSVInputProcessor(TSPEngine engine, String eventTypeName) throws EPException {
 		super(engine, eventTypeName);
+	}
+	
+	/**
+	 * Constructor of CSVInputProcessor
+	 * 
+	 * @param engine Sets the engine to use for event processing
+	 * @param eventTypeName name of the event type
+	 * @param source key where data is located
+	 */
+	public CSVInputProcessor(TSPEngine engine, String eventTypeName, String source) throws EPException {
+		super(engine, eventTypeName, source);
 	}
 
 	/**

@@ -1,6 +1,7 @@
 package com.trovent.streamprocessor.esper;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -51,5 +52,17 @@ public class EplEvent {
 	public String dataToJson() throws JsonProcessingException {
 		ObjectMapper jackson = new ObjectMapper();
 		return jackson.writeValueAsString(this.data);
+	}
+
+	public String dataToJson(String source) throws JsonProcessingException {
+		// return jackson.writeValueAsString(this.data);
+		// LinkedHashMap<String, Object> => "{ <String> : <object> }"
+
+		// new: { <source> : { <String> : <object> } }
+		HashMap<String, Object> event = new HashMap<>();
+		event.put(source, this.data);
+
+		ObjectMapper jackson = new ObjectMapper();
+		return jackson.writeValueAsString(event);
 	}
 }

@@ -96,6 +96,44 @@ class TestConnectorController {
 	}
 
 	@Test
+	void testConsumerConnectorWithSource()
+			throws InterruptedException, JsonParseException, JsonMappingException, IOException {
+
+		// Test: (data) => Consumer => TSPEngine => (result)
+		//
+		// connect TSPEngine with consumer given by connector
+		final String DATASOURCE = "MyData";
+		ConnectorController controller = ConnectorController.create(this.engine, this.kafkaManager);
+		ConsumerConnector connector = new ConsumerConnector(null, schema.name, DATASOURCE);
+		int hashCode = controller.connect(connector);
+
+		// get consumer object for debugging purposes
+		ConsumerThread cThread = controller.getConsumerThread(hashCode);
+		assertNotNull(cThread);
+		StringQueueConsumer consumer = (StringQueueConsumer) cThread.getConsumer();
+		assertNotNull(consumer);
+
+		// create a listener to read output events
+		StringQueueProducer producer = new StringQueueProducer();
+		this.engine.addListener(statement.name, new ProducerListener(producer));
+
+		// push event into consumer
+		// => will be read be consumerThread
+		// => will be put into connected event schema (schema.name)
+		EplEvent event = new EplEvent(schema.name).add("name", "John").add("duration", 1).add("isMale", true);
+		consumer.push(event.dataToJson(DATASOURCE));
+
+		while (producer.isEmpty()) {
+			Thread.sleep(10);
+		}
+
+		String outputEvent = producer.poll();
+		EplEvent resultEvent = EplEvent.fromJson(outputEvent);
+
+		assertEquals(event.data, resultEvent.data);
+	}
+
+	@Test
 	void testProducerConnector() throws InterruptedException, JsonParseException, JsonMappingException, IOException {
 
 		// Test: (data) => TSPEngine => Producer => (result)

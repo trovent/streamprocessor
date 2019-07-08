@@ -41,6 +41,7 @@ public class ConsumerThread implements Runnable {
 	public ConsumerConnector getConnector() {
 		String topic = "";
 		String schemaName = "";
+		String source = null;
 
 		if (consumer instanceof TSPKafkaConsumer) {
 			topic = ((TSPKafkaConsumer) consumer).getTopic();
@@ -48,9 +49,10 @@ public class ConsumerThread implements Runnable {
 
 		if (input instanceof AbstractInputProcessor) {
 			schemaName = ((AbstractInputProcessor) input).getEventType().getName();
+			source = ((AbstractInputProcessor) input).getSource();
 		}
 
-		return new ConsumerConnector(topic, schemaName);
+		return new ConsumerConnector(topic, schemaName, source);
 	}
 
 	private void init(IConsumer consumer, InputProcessor input) {
@@ -69,7 +71,7 @@ public class ConsumerThread implements Runnable {
 
 	@Override
 	public void run() {
-
+		
 		while (!this.isStopped) {
 			final List<String> records = this.consumer.poll(Duration.ofMillis(100));
 			for (String record : records) {

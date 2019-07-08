@@ -83,7 +83,7 @@ public class ConnectorController {
 	 * @return Id of the new Connection
 	 */
 	public int connect(ConsumerConnector connector) {
-		InputProcessor input = new JSONInputProcessor(this.engine, connector.schemaName);
+		InputProcessor input = new JSONInputProcessor(this.engine, connector.schemaName, connector.source);
 		ConsumerThread consumerThread;
 		if (connector.topic != null) {
 			consumerThread = this.kafkaManager.createConsumerThread(connector.topic, input);
@@ -111,6 +111,7 @@ public class ConnectorController {
 			producer = new StringQueueProducer();
 		}
 		ProducerListener listener = new ProducerListener(producer, connector.eplStatementName);
+		// ProducerListener listener = new ProducerListener(producer, connector.eplStatementName, connector.destination);
 
 		this.engine.addListener(connector.eplStatementName, listener);
 		this.listeners.put(listener.hashCode(), listener);

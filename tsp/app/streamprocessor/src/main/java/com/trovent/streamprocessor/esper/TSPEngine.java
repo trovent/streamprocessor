@@ -7,6 +7,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.espertech.esper.client.ConfigurationException;
 import com.espertech.esper.client.EPException;
 import com.espertech.esper.client.EPServiceProvider;
@@ -22,6 +25,8 @@ public class TSPEngine {
 
 	private static TSPEngine engine = null;
 
+	private Logger logger = null;
+
 	private TSPEngine() {
 		lookupTypeName = new HashMap<String, Class<?>>();
 		lookupTypeName.put("string", String.class);
@@ -34,10 +39,8 @@ public class TSPEngine {
 		lookupTypeName.put("byte", byte.class);
 		lookupTypeName.put("biginteger", BigInteger.class);
 		lookupTypeName.put("bigdecimal", BigDecimal.class);
-	}
-	
-	public String getString() {
-		return "Hrvoje";
+
+		logger = LogManager.getLogger();
 	}
 
 	/**
@@ -73,7 +76,6 @@ public class TSPEngine {
 	public void shutdown() {
 		epService.destroy();
 		epService = null;
-
 	}
 
 	/**
@@ -88,10 +90,13 @@ public class TSPEngine {
 	 *         suffix is appended to preserve uniqueness
 	 * @throws EPException when the expression was not valid
 	 */
-	public String addEPLStatement(String statement, String statementName) throws EPException {
-		// creates a new Statement
+	public String addEPLStatement(String expression, String statementName) throws EPException {
+
+		this.logger.info("add statement: {}", statementName);
+		this.logger.debug("statement expression: {}", expression);
+
 		EPStatement eplStatement;
-		eplStatement = epService.getEPAdministrator().createEPL(statement, statementName);
+		eplStatement = epService.getEPAdministrator().createEPL(expression, statementName);
 
 		return eplStatement.getName();
 	}
@@ -114,14 +119,16 @@ public class TSPEngine {
 	/**
 	 * stops and destroys an EsperStatement via its given Name
 	 * 
-	 * @param name the unique name of the statement
+	 * @param statementName the unique name of the statement
 	 */
-	public void removeEPLStatement(String name) {
-		EPStatement statement = epService.getEPAdministrator().getStatement(name);
+	public void removeEPLStatement(String statementName) {
+
+		this.logger.info("remove statement: {}", statementName);
+		EPStatement statement = epService.getEPAdministrator().getStatement(statementName);
 		if (statement != null) {
 			statement.destroy();
 		} else {
-			throw new EPException(String.format("there is no statement with the name '%s'", name));
+			throw new EPException(String.format("there is no statement with the name '%s'", statementName));
 		}
 	}
 
@@ -254,6 +261,9 @@ public class TSPEngine {
 
 		// "string" => String.class
 
+		this.logger.info("adding schema: {}", name);
+		this.logger.debug("schema definition: {}", schema);
+
 		Map<String, Object> ev = new HashMap<String, Object>();
 
 		for (Map.Entry<String, String> entry : schema.entrySet()) {
@@ -329,6 +339,8 @@ public class TSPEngine {
 	 *              on it.
 	 */
 	public void removeEPLSchema(String eventTypeName, boolean force) throws ConfigurationException {
+
+		this.logger.info("remove schema: {}", eventTypeName);
 		if (epService.getEPAdministrator().getConfiguration().isEventTypeExists(eventTypeName)) {
 			epService.getEPAdministrator().getConfiguration().removeEventType(eventTypeName, force);
 		} else {

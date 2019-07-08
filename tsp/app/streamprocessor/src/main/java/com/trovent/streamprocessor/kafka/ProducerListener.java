@@ -44,21 +44,45 @@ public class ProducerListener implements UpdateListener {
 	@Override
 	public void update(EventBean[] newEvents, EventBean[] oldEvents) {
 
-		for (EventBean eb : newEvents) {
-			EplEvent event = new EplEvent(eb.getEventType().getName());
-			for (EventPropertyDescriptor descriptor : eb.getEventType().getPropertyDescriptors()) {
-				String propName = descriptor.getPropertyName();
-				event.add(propName, eb.get(propName));
-			}
+		if (newEvents != null) {
+			for (EventBean eb : newEvents) {
+				EplEvent event = new EplEvent(eb.getEventType().getName());
 
-			String jsonString;
-			try {
-				jsonString = event.toJson();
-				logger.info(jsonString);
-				this.producer.send(jsonString);
-			} catch (JsonProcessingException e) {
-				logger.error("Error converting event into json format");
-				logger.error(e.getMessage());
+				for (EventPropertyDescriptor descriptor : eb.getEventType().getPropertyDescriptors()) {
+					String propName = descriptor.getPropertyName();
+					event.add(propName, eb.get(propName));
+				}
+
+				String jsonString;
+				try {
+					jsonString = event.toJson();
+					logger.debug("ISTREAM event: {}", jsonString);
+					this.producer.send(jsonString);
+				} catch (JsonProcessingException e) {
+					logger.error("Error converting event into json format");
+					logger.error(e.getMessage());
+				}
+			}
+		}
+
+		if (oldEvents != null) {
+			for (EventBean eb : oldEvents) {
+				EplEvent event = new EplEvent(eb.getEventType().getName());
+
+				for (EventPropertyDescriptor descriptor : eb.getEventType().getPropertyDescriptors()) {
+					String propName = descriptor.getPropertyName();
+					event.add(propName, eb.get(propName));
+				}
+
+				String jsonString;
+				try {
+					jsonString = event.toJson();
+					logger.debug("RSTREAM event: {}", jsonString);
+					this.producer.send(jsonString);
+				} catch (JsonProcessingException e) {
+					logger.error("Error converting event into json format");
+					logger.error(e.getMessage());
+				}
 			}
 		}
 	}

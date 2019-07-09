@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.trovent.streamprocessor.JSONInputProcessor;
+import com.trovent.streamprocessor.OutputProcessor;
 import com.trovent.streamprocessor.esper.TSPEngine;
 import com.trovent.streamprocessor.restapi.ConsumerConnector;
 import com.trovent.streamprocessor.restapi.ProducerConnector;
@@ -104,14 +105,14 @@ public class ConnectorController {
 	 * @return Id of the new Connection
 	 */
 	public int connect(ProducerConnector connector) {
+		OutputProcessor output = new OutputProcessor(connector.destination);
 		IProducer producer;
 		if (connector.topic != null) {
 			producer = this.kafkaManager.createProducer(connector.topic);
 		} else {
 			producer = new StringQueueProducer();
 		}
-		ProducerListener listener = new ProducerListener(producer, connector.eplStatementName);
-		// ProducerListener listener = new ProducerListener(producer, connector.eplStatementName, connector.destination);
+		ProducerListener listener = new ProducerListener(producer, connector.eplStatementName, output);
 
 		this.engine.addListener(connector.eplStatementName, listener);
 		this.listeners.put(listener.hashCode(), listener);

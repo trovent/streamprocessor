@@ -1,5 +1,6 @@
 package com.trovent.streamprocessor.test;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -177,6 +178,42 @@ class TestConnectorController {
 		// compare
 		result = EplEvent.fromJson(data);
 		assertEquals(eventBob.data, result.data);
+	}
+	
+	@Test
+	void testProducerConnectorWithDestination() throws InterruptedException, JsonParseException, JsonMappingException, IOException {
+
+		// Test: (data) => TSPEngine => Producer => (result)
+		//
+		
+		String destinationKey = "destination_key";
+		
+		ConnectorController controller = ConnectorController.create(this.engine, this.kafkaManager);
+
+		// on every event in <statement.name>, data is written into producer
+		ProducerConnector connector = new ProducerConnector(null, statement.name, destinationKey);
+		int hashCode = controller.connect(connector);
+
+		// get listener to check output events
+		ProducerListener listener = controller.getListener(hashCode);
+		assertNotNull(listener);
+		StringQueueProducer producer = (StringQueueProducer) listener.getProducer();
+		assertNotNull(producer);
+
+		// now kafka topic "input" is connector to schema "employees"
+		// => consumer thread reads data from kafka into esper schema
+		EplEvent eventEve = new EplEvent("employees").add("name", "Eve").add("duration", 1).add("isMale", false);
+		this.engine.sendEPLEvent(eventEve);
+
+		// wait until processed
+		while (producer.isEmpty()) {
+			Thread.sleep(10);
+		}
+
+		// retrieve from StringQueueProducer
+		String data = producer.poll();
+		assertNotNull(data);
+		assertTrue("Output json string with data does not have destination key", data.indexOf("\""+destinationKey+"\"") >= 0);
 	}
 
 	@Test

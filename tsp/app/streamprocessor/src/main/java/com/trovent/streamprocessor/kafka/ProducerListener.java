@@ -1,32 +1,33 @@
 package com.trovent.streamprocessor.kafka;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.espertech.esper.client.EventBean;
-import com.espertech.esper.client.EventPropertyDescriptor;
 import com.espertech.esper.client.UpdateListener;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.trovent.streamprocessor.esper.EplEvent;
+import com.trovent.streamprocessor.OutputProcessor;
 import com.trovent.streamprocessor.restapi.ProducerConnector;
 
 public class ProducerListener implements UpdateListener {
 
 	private IProducer producer;
 
-	private Logger logger;
-
 	private String statementName;
+	
+	private OutputProcessor outputProcessor;
 
 	public ProducerListener(IProducer producer) {
 		this.producer = producer;
-		this.logger = LogManager.getLogger();
+		this.outputProcessor = new OutputProcessor();
 	}
 
 	public ProducerListener(IProducer producer, String statementName) {
 		this.producer = producer;
-		this.logger = LogManager.getLogger();
 		this.setStatementName(statementName);
+		this.outputProcessor = new OutputProcessor();
+	}
+	
+	public ProducerListener(IProducer producer, String statementName, OutputProcessor output) {
+		this.producer = producer;
+		this.setStatementName(statementName);
+		this.outputProcessor =  output;
 	}
 
 	public IProducer getProducer() {
@@ -43,47 +44,11 @@ public class ProducerListener implements UpdateListener {
 
 	@Override
 	public void update(EventBean[] newEvents, EventBean[] oldEvents) {
-
 		if (newEvents != null) {
-			for (EventBean eb : newEvents) {
-				EplEvent event = new EplEvent(eb.getEventType().getName());
-
-				for (EventPropertyDescriptor descriptor : eb.getEventType().getPropertyDescriptors()) {
-					String propName = descriptor.getPropertyName();
-					event.add(propName, eb.get(propName));
-				}
-
-				String jsonString;
-				try {
-					jsonString = event.toJson();
-					logger.debug("ISTREAM event: {}", jsonString);
-					this.producer.send(jsonString);
-				} catch (JsonProcessingException e) {
-					logger.error("Error converting event into json format");
-					logger.error(e.getMessage());
-				}
-			}
+			outputProcessor.process(this.producer, newEvents, "ISTREAM");
 		}
-
 		if (oldEvents != null) {
-			for (EventBean eb : oldEvents) {
-				EplEvent event = new EplEvent(eb.getEventType().getName());
-
-				for (EventPropertyDescriptor descriptor : eb.getEventType().getPropertyDescriptors()) {
-					String propName = descriptor.getPropertyName();
-					event.add(propName, eb.get(propName));
-				}
-
-				String jsonString;
-				try {
-					jsonString = event.toJson();
-					logger.debug("RSTREAM event: {}", jsonString);
-					this.producer.send(jsonString);
-				} catch (JsonProcessingException e) {
-					logger.error("Error converting event into json format");
-					logger.error(e.getMessage());
-				}
-			}
+			outputProcessor.process(this.producer, oldEvents, "RSTREAM");
 		}
 	}
 

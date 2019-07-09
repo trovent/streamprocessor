@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import java.time.*;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -39,6 +41,15 @@ public class TSPEngine {
 		lookupTypeName.put("byte", byte.class);
 		lookupTypeName.put("biginteger", BigInteger.class);
 		lookupTypeName.put("bigdecimal", BigDecimal.class);
+
+		lookupTypeName.put("clock", Clock.class);
+		lookupTypeName.put("duration", Duration.class);
+		lookupTypeName.put("localdate", LocalDate.class);
+		lookupTypeName.put("localdatetime", LocalDateTime.class);
+		lookupTypeName.put("localtime", LocalTime.class);
+		lookupTypeName.put("offsetdatetime", OffsetDateTime.class);
+		lookupTypeName.put("offsettime", OffsetTime.class);
+		lookupTypeName.put("zoneddatetime", ZonedDateTime.class);
 
 		logger = LogManager.getLogger();
 	}

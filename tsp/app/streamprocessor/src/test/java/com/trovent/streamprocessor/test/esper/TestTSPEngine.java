@@ -204,7 +204,27 @@ public class TestTSPEngine {
 		newEventType.put("myBigInteger", "bigInteger");
 		newEventType.put("myBigDecimal", "bigDecimal");
 
+		newEventType.put("myClock", "clock");
+		newEventType.put("myDuration", "duration");
+		newEventType.put("myLocaltime", "localdate");
+		newEventType.put("mylocalDateTime", "localdatetime");
+		newEventType.put("myLocalTime", "localtime");
+		newEventType.put("myOffsetDateTime", "offsetdatetime");
+		newEventType.put("myOffsetTime", "offsettime");
+		newEventType.put("myZonedDateTime", "zoneddatetime");
+
 		engine.addEPLSchema("TestEventSchema", newEventType);
+	}
+
+	@Test
+	public void testAddEPLSchemaWithJavaTypes() {
+		Map<String, String> newEventType = new HashMap<String, String>();
+
+		newEventType.put("myPeriod", "java.time.Period");
+		newEventType.put("myYear", "java.time.Year");
+		newEventType.put("myChar", "java.lang.Character");
+
+		engine.addEPLSchema("TestEvent", newEventType);
 	}
 
 	@Test

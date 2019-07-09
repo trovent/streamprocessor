@@ -204,7 +204,6 @@ public class TestTSPEngine {
 		newEventType.put("myBigInteger", "bigInteger");
 		newEventType.put("myBigDecimal", "bigDecimal");
 
-		newEventType.put("myClock", "clock");
 		newEventType.put("myDuration", "duration");
 		newEventType.put("myLocaltime", "localdate");
 		newEventType.put("mylocalDateTime", "localdatetime");

@@ -42,7 +42,6 @@ public class TSPEngine {
 		lookupTypeName.put("biginteger", BigInteger.class);
 		lookupTypeName.put("bigdecimal", BigDecimal.class);
 
-		lookupTypeName.put("clock", Clock.class);
 		lookupTypeName.put("duration", Duration.class);
 		lookupTypeName.put("localdate", LocalDate.class);
 		lookupTypeName.put("localdatetime", LocalDateTime.class);

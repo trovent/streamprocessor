@@ -15,6 +15,7 @@ import com.trovent.streamprocessor.esper.TSPEngine;
  */
 public class JSONInputProcessor extends AbstractInputProcessor {
 
+	private EplEventConverter converter;
 	/**
 	 * Constructor of JSONInputProcessor
 	 * 
@@ -34,6 +35,7 @@ public class JSONInputProcessor extends AbstractInputProcessor {
 	 */
 	public JSONInputProcessor(TSPEngine engine, String eventTypeName) throws EPException {
 		super(engine, eventTypeName);
+		converter = new EplEventConverter(engine.getEventType(eventTypeName));
 	}
 	
 	/**
@@ -47,6 +49,7 @@ public class JSONInputProcessor extends AbstractInputProcessor {
 	 */
 	public JSONInputProcessor(TSPEngine engine, String eventTypeName, String source) throws EPException {
 		super(engine, eventTypeName, source);
+		converter = new EplEventConverter(engine.getEventType(eventTypeName));
 	}
 
 	/**
@@ -68,6 +71,7 @@ public class JSONInputProcessor extends AbstractInputProcessor {
 		try {
 			EplEvent event = new EplEvent(this.eventType.getName());
 			event.dataFromJson(input, source);
+			this.converter.convertTypes(event);
 			this.engine.sendEPLEvent(event);
 		} catch (JsonParseException e1) {
 			this.logger.warn(e1.getMessage());

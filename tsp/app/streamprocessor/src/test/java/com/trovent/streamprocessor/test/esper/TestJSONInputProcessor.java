@@ -18,6 +18,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.trovent.streamprocessor.JSONInputProcessor;
 import com.trovent.streamprocessor.esper.EplEvent;
+import com.trovent.streamprocessor.esper.EplSchema;
 import com.trovent.streamprocessor.esper.TSPEngine;
 import com.trovent.streamprocessor.kafka.ProducerListener;
 import com.trovent.streamprocessor.kafka.StringQueueProducer;
@@ -201,5 +202,45 @@ public class TestJSONInputProcessor {
 
 		// check for 5 field in resulting event
 		assertEquals(5, event.data.keySet().size());
+	}
+
+	@Test
+	public void testProcessDateTimeFromString()
+			throws JsonParseException, JsonMappingException, IOException, InterruptedException {
+
+		final String DATAKEY = "MyData";
+		final String SCHEMA_NAME = "DateTimeSchema";
+		final String STMT_NAME = "MyStatement";
+
+		EplSchema schema = new EplSchema(SCHEMA_NAME).add("name", "string").add("height", "integer").add("birthday",
+				"localdatetime");
+		this.engine.addEPLSchema(schema);
+
+		JSONInputProcessor input = new JSONInputProcessor(engine, schema.name, DATAKEY);
+
+		// create statement, add to engine
+
+		String stmt = "select name, height, birthday.getDayOfMonth() from "
+				+ schema.name;
+		this.engine.addEPLStatement(stmt, STMT_NAME);
+
+		StringQueueProducer producer = new StringQueueProducer();
+		this.engine.addListener(STMT_NAME, new ProducerListener(producer));
+		assertEquals(0, producer.count());
+
+		// create data in JSON format
+		String jsonData = "{ \"key\" : \"myvalue\", \"" + DATAKEY
+				+ "\" : { \"name\" : \"Trovent\", \"height\" : 42, \"birthday\" : \"2019-03-17T01:02:59\" } }";
+		assertTrue(input.process(jsonData));
+
+		// wait for listener
+		while (producer.isEmpty()) {
+			Thread.sleep(10);
+		}
+
+		EplEvent event = EplEvent.fromJson(producer.poll());
+
+		// check for 5 field in resulting event
+		assertEquals(3, event.data.keySet().size());
 	}
 }

@@ -15,11 +15,13 @@ public class ProducerListener implements UpdateListener {
 
 	public ProducerListener(IProducer producer) {
 		this.producer = producer;
+		this.outputProcessor = new OutputProcessor();
 	}
 
 	public ProducerListener(IProducer producer, String statementName) {
 		this.producer = producer;
 		this.setStatementName(statementName);
+		this.outputProcessor = new OutputProcessor();
 	}
 	
 	public ProducerListener(IProducer producer, String statementName, OutputProcessor output) {

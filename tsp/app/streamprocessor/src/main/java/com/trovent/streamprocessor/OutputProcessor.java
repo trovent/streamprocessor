@@ -6,10 +6,7 @@ import org.apache.logging.log4j.Logger;
 import com.espertech.esper.client.EventBean;
 import com.espertech.esper.client.EventPropertyDescriptor;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.trovent.streamprocessor.esper.EplEvent;
-import com.trovent.streamprocessor.esper.serializer.EplEventSerializer;
 import com.trovent.streamprocessor.kafka.IProducer;
 
 public class OutputProcessor {
@@ -17,6 +14,10 @@ public class OutputProcessor {
 	private Logger logger = LogManager.getLogger();
 	
 	String destination;
+	
+	public OutputProcessor() {
+		this.destination = "";
+	}
 	
 	public OutputProcessor(String destination) {
 		this.destination = destination;
@@ -33,23 +34,7 @@ public class OutputProcessor {
 
 			String jsonString;
 			try {
-				if (this.destination == null || this.destination.equals("")) {
-					jsonString = event.toJson();
-				} else {
-					// Prepare serializer for event object
-					EplEventSerializer eplEventSerializer = new EplEventSerializer();
-					eplEventSerializer.setDestination(this.destination);
-					
-					ObjectMapper mapper = new ObjectMapper();
-					
-					// Prepare module for mapper to use serializer
-					SimpleModule module = new SimpleModule();
-					module.addSerializer(EplEvent.class, eplEventSerializer);
-					mapper.registerModule(module);
-					
-					// Convert event object to json string
-					jsonString = mapper.writeValueAsString(event);
-				}
+				jsonString = event.toJson(destination);
 				logger.debug("{} event: {}", eventType, jsonString);
 				producer.send(jsonString);
 			} catch (JsonProcessingException e) {

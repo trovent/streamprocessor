@@ -25,7 +25,8 @@ public class EplEventConverter {
 	private HashMap<String, Class<?>> typeLookupTable;
 
 	private final static Set<Class<?>> convertibleTypes = Collections
-			.unmodifiableSet(new HashSet(Arrays.asList(ZonedDateTime.class, LocalDateTime.class)));
+			.unmodifiableSet(new HashSet(Arrays.asList(ZonedDateTime.class, LocalDateTime.class, LocalDate.class,
+					LocalTime.class, OffsetDateTime.class, OffsetTime.class, Duration.class)));
 
 	EplEventConverter(EventType eventType) {
 		this.eventType = eventType;

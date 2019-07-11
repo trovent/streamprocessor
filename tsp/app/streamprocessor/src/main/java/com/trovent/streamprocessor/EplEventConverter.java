@@ -29,9 +29,15 @@ public class EplEventConverter {
 	private HashMap<String, Class<?>> typeLookupTable;
 
 	private final static Set<Class<?>> convertibleTypes = Collections
-			.unmodifiableSet(new HashSet(Arrays.asList(ZonedDateTime.class, LocalDateTime.class, LocalDate.class,
-					LocalTime.class, OffsetDateTime.class, OffsetTime.class, Duration.class)));
+			.unmodifiableSet(new HashSet<Class<?>>(Arrays.asList(ZonedDateTime.class, LocalDateTime.class,
+					LocalDate.class, LocalTime.class, OffsetDateTime.class, OffsetTime.class, Duration.class)));
 
+	/**
+	 * Constructor of EplEventConverter Create lookup table with names of the fields
+	 * to be converted, based on the given event type
+	 * 
+	 * @param eventType Esper event type describing all field names and types
+	 */
 	EplEventConverter(EventType eventType) {
 		this.eventType = eventType;
 		this.typeLookupTable = new HashMap<>();
@@ -45,9 +51,17 @@ public class EplEventConverter {
 		}
 	}
 
+	/**
+	 * For all types of the event found in the lookup table, exec a conversion.
+	 * Possible conversions: (string) => { LocalDateTime, ZonedDateTime, LocalData,
+	 * LocalTime, OffsetDateTime, OffsetTime, Duration } (integer) => { LocalDate,
+	 * LocalTime, Duration }
+	 * 
+	 * @param event EplEvent containing data fields that have to be converted.
+	 */
 	public void convertTypes(EplEvent event) {
 
-		// for all types of the event found in the lookup table, exec a conversion
+		//
 		// (string => non-primitive type)
 		for (Entry<String, Class<?>> entry : this.typeLookupTable.entrySet()) {
 			String fieldName = entry.getKey();
@@ -62,29 +76,36 @@ public class EplEventConverter {
 		}
 	}
 
+	/**
+	 * Convert value from a given string into a complex object given by class type.
+	 * 
+	 * @param value        string value to be converted
+	 * @param expectedType type of the class to be returned
+	 * @return converted value, can be null on failed conversion
+	 */
 	private Object convert(String value, Class<?> expectedType) {
 		try {
-		if (expectedType == LocalDateTime.class) {
-			return LocalDateTime.parse(value);
-		}
-		if (expectedType == ZonedDateTime.class) {
-			return ZonedDateTime.parse(value);
-		}
-		if (expectedType == LocalDate.class) {
-			return LocalDate.parse(value);
-		}
-		if (expectedType == LocalTime.class) {
-			return LocalTime.parse(value);
-		}
-		if (expectedType == OffsetDateTime.class) {
-			return OffsetDateTime.parse(value);
-		}
-		if (expectedType == OffsetTime.class) {
-			return OffsetTime.parse(value);
-		}
-		if (expectedType == Duration.class) {
-			return Duration.parse(value);
-		}
+			if (expectedType == LocalDateTime.class) {
+				return LocalDateTime.parse(value);
+			}
+			if (expectedType == ZonedDateTime.class) {
+				return ZonedDateTime.parse(value);
+			}
+			if (expectedType == LocalDate.class) {
+				return LocalDate.parse(value);
+			}
+			if (expectedType == LocalTime.class) {
+				return LocalTime.parse(value);
+			}
+			if (expectedType == OffsetDateTime.class) {
+				return OffsetDateTime.parse(value);
+			}
+			if (expectedType == OffsetTime.class) {
+				return OffsetTime.parse(value);
+			}
+			if (expectedType == Duration.class) {
+				return Duration.parse(value);
+			}
 		}
 		catch (DateTimeParseException e) {
 			LogManager.getLogger().warn("Exception on conversion: {} ({})", e.getMessage(), e.getParsedString());
@@ -92,6 +113,13 @@ public class EplEventConverter {
 		return null;
 	}
 
+	/**
+	 * Convert value from a given integer into a complex object given by class type.
+	 * 
+	 * @param value        integer value to be converted
+	 * @param expectedType type of the class to be returned
+	 * @return converted value, can be null on failed conversion
+	 */
 	private Object convert(Integer value, Class<?> expectedType) {
 
 		if (expectedType == LocalDate.class) {

@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import java.time.*;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -39,6 +41,14 @@ public class TSPEngine {
 		lookupTypeName.put("byte", byte.class);
 		lookupTypeName.put("biginteger", BigInteger.class);
 		lookupTypeName.put("bigdecimal", BigDecimal.class);
+
+		lookupTypeName.put("duration", Duration.class);
+		lookupTypeName.put("localdate", LocalDate.class);
+		lookupTypeName.put("localdatetime", LocalDateTime.class);
+		lookupTypeName.put("localtime", LocalTime.class);
+		lookupTypeName.put("offsetdatetime", OffsetDateTime.class);
+		lookupTypeName.put("offsettime", OffsetTime.class);
+		lookupTypeName.put("zoneddatetime", ZonedDateTime.class);
 
 		logger = LogManager.getLogger();
 	}
@@ -253,8 +263,9 @@ public class TSPEngine {
 	 * @param schema Map with format String,String . First String is the name of the
 	 *               parameter, second the name of the class <br>
 	 *               currently allowed:
+	 * @throws EPException
 	 */
-	public void addEPLSchema(String name, Map<String, String> schema) {
+	public void addEPLSchema(String name, Map<String, String> schema) throws EPException {
 		/*
 		 * { "name" : "string", "age" : "integer" }
 		 */
@@ -266,16 +277,22 @@ public class TSPEngine {
 
 		Map<String, Object> ev = new HashMap<String, Object>();
 
-		for (Map.Entry<String, String> entry : schema.entrySet()) {
-			String typeName = entry.getValue();
-			Class<?> javaType = lookupTypeName.get(typeName.toLowerCase());
-			if (javaType == null) {
-				throw new EPException(String.format("can not find type with name '%s'", typeName));
-			}
-			ev.put(entry.getKey(), javaType);
-		}
+		try {
+			for (Map.Entry<String, String> entry : schema.entrySet()) {
+				String typeName = entry.getValue();
+				Class<?> javaType = lookupTypeName.get(typeName.toLowerCase());
+				if (javaType == null) {
+					javaType = Class.forName(typeName);
+				}
 
-		this.epService.getEPAdministrator().getConfiguration().addEventType(name, ev);
+				ev.put(entry.getKey(), javaType);
+			}
+			this.epService.getEPAdministrator().getConfiguration().addEventType(name, ev);
+
+		} catch (ClassNotFoundException e) {
+
+			throw new EPException(String.format("can not find type (%s)", e.getMessage()));
+		}
 	}
 
 	/**

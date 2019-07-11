@@ -39,7 +39,7 @@ public class ProducerListener implements UpdateListener {
 		if (producer instanceof TSPKafkaProducer) {
 			topic = ((TSPKafkaProducer) this.producer).getTopic();
 		}
-		return new ProducerConnector(topic, this.statementName);
+		return new ProducerConnector(topic, this.statementName, this.outputProcessor.getDestination());
 	}
 
 	@Override

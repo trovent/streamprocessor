@@ -13,7 +13,7 @@ public class OutputProcessor {
 		
 	private Logger logger = LogManager.getLogger();
 	
-	String destination;
+	private String destination;
 	
 	public OutputProcessor() {
 		this.destination = "";
@@ -42,6 +42,10 @@ public class OutputProcessor {
 				logger.error(e.getMessage());
 			}
 		}
+	}
+	
+	public String getDestination() {
+		return this.destination;
 	}
 
 }

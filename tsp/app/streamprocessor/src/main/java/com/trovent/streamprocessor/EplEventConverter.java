@@ -5,6 +5,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map.Entry;
+
+import org.apache.logging.log4j.LogManager;
+
 import java.util.Set;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -13,6 +16,7 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
 
 import com.espertech.esper.client.EventPropertyDescriptor;
 import com.espertech.esper.client.EventType;
@@ -59,6 +63,7 @@ public class EplEventConverter {
 	}
 
 	private Object convert(String value, Class<?> expectedType) {
+		try {
 		if (expectedType == LocalDateTime.class) {
 			return LocalDateTime.parse(value);
 		}
@@ -80,7 +85,10 @@ public class EplEventConverter {
 		if (expectedType == Duration.class) {
 			return Duration.parse(value);
 		}
-		
+		}
+		catch (DateTimeParseException e) {
+			LogManager.getLogger().warn("Exception on conversion: {} ({})", e.getMessage(), e.getParsedString());
+		}
 		return null;
 	}
 

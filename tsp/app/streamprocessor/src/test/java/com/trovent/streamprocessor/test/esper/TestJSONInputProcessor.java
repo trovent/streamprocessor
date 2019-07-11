@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import com.espertech.esper.client.EPException;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.trovent.streamprocessor.JSONInputProcessor;
 import com.trovent.streamprocessor.esper.EplEvent;
 import com.trovent.streamprocessor.esper.EplSchema;
@@ -242,5 +243,61 @@ public class TestJSONInputProcessor {
 
 		// check for 5 field in resulting event
 		assertEquals(3, event.data.keySet().size());
+	}
+
+	@Test
+	public void testEplEventConverter()
+			throws JsonParseException, JsonMappingException, IOException, InterruptedException {
+
+		final String DATAKEY = "MyData";
+		final String SCHEMA_NAME = "DateTimeSchema";
+		final String STMT_NAME = "MyStatement";
+
+		EplSchema schema = new EplSchema(SCHEMA_NAME).add("name", "string").add("myLocalDT", "localdatetime")
+				.add("myLocalDate", "localdate").add("myLocalTime", "localtime").add("myZDT", "zoneddatetime")
+				.add("myDuration", "duration").add("myOffsetTime", "offsettime")
+				.add("myOffsetDateTime", "offsetdatetime");
+		this.engine.addEPLSchema(schema);
+
+		JSONInputProcessor input = new JSONInputProcessor(engine, schema.name, DATAKEY);
+
+		// create statement, add to engine
+
+		String stmt = "select name, myLocalDT.getDayOfMonth(), myLocalDate, myLocalTime, myZDT, myDuration,"
+				+ "myOffsetTime, myOffsetDateTime " + "from " + schema.name;
+		this.engine.addEPLStatement(stmt, STMT_NAME);
+
+		StringQueueProducer producer = new StringQueueProducer();
+		this.engine.addListener(STMT_NAME, new ProducerListener(producer));
+		assertEquals(0, producer.count());
+
+		// create data in JSON format
+		ObjectMapper mapper = new ObjectMapper();
+		HashMap<String, Object> eventMap = new HashMap<>();
+		HashMap<String, Object> data = new HashMap<>();
+
+		data.put("name", "Trovent");
+		data.put("myLocalDT", "2019-03-17T01:02:59");
+		data.put("myLocalTime", "12:13:14");
+		data.put("myLocalDate", "2019-12-24");
+		data.put("myZDT", "2019-11-25T12:13:14+02:00");
+		data.put("myDuration", 9876543);
+		data.put("myOffsetTime", "09:20:31+06:00");
+		data.put("myOffsetDateTime", "1999-12-31T11:12:13+03:00");
+
+		eventMap.put("key", "myvalue");
+		eventMap.put(DATAKEY, data);
+
+		assertTrue(input.process(mapper.writeValueAsString(eventMap)));
+
+		// wait for listener
+		while (producer.isEmpty()) {
+			Thread.sleep(10);
+		}
+
+		EplEvent event = EplEvent.fromJson(producer.poll());
+
+		// check for 5 field in resulting event
+		assertEquals(8, event.data.keySet().size());
 	}
 }
